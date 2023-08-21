@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
@@ -6,29 +7,13 @@ import matplotlib.patches as patches
 # Warning
 # matplotlib.use('TkAgg')
 
+LARGE_NUM = 1000000
+
 class VelocityObstacle:
     def __init__(self, radius_A, radius_B, time_horizon):
         self.rA = radius_A
         self.rB = radius_B
-        self.τ = time_horizon
-
-    def compute_vo_parameters(self, pA, vA, pB, vB):
-        relative_position = pB - pA
-        relative_velocity = vB - vA
-
-        # The circle's center for Minkowski sum
-        circle_center = relative_position + self.τ * vB
-        combined_radius = self.rA + self.rB
-        
-        return circle_center, combined_radius, relative_velocity
-
-    # def is_velocity_inside_vo(self, velocity, circle_center, combined_radius, relative_velocity):
-    #     # Check if the vector from circle_center to velocity passes through the Minkowski sum circle
-    #     distance_to_center = np.linalg.norm(velocity - circle_center)
-    #
-    #     if distance_to_center <= combined_radius:
-    #         return True
-    #     return False
+        self.t_hori = time_horizon
 
     @staticmethod
     def do_intersect(P, Q, A, B):
@@ -60,26 +45,45 @@ class VelocityObstacle:
                 return True
         return False
 
-    def get_avoidance_velocity(self, circle_center, combined_radius, relative_velocity):
-        # For simplicity, we choose the nearest point on the boundary of the VO
-        direction_to_center = relative_velocity - circle_center
-        direction_normalized = direction_to_center / np.linalg.norm(direction_to_center)
-        new_velocity = circle_center + direction_normalized * combined_radius
-        return new_velocity
+    @staticmethod
+    def in_triangle(triangle, point):
+        """ check if the point is inside the triangle """
+
+        x1 = triangle[0][0]
+        y1 = triangle[0][1]
+        x2 = triangle[1][0]
+        y2 = triangle[1][1]
+        x3 = triangle[2][0]
+        y3 = triangle[2][1]
+        xp = point[0]
+        yp = point[1]
+
+        c1 = (x2 - x1) * (yp - y1) - (y2 - y1) * (xp - x1)
+        c2 = (x3 - x2) * (yp - y2) - (y3 - y2) * (xp - x2)
+        c3 = (x1 - x3) * (yp - y3) - (y1 - y3) * (xp - x3)
+        if (c1 < 0 and c2 < 0 and c3 < 0) or (c1 > 0 and c2 > 0 and c3 > 0):
+            return True
+        else:
+            return False
 
     def desired_velocity(self, pA, vA, pB, vB, pG=None, max_speed=1.0):
 
-        # generate candidate velocities
+        margin = 0.00
         samples = 100
+        preferred_v = None
+
+        # generate candidate velocities
         if pG is None:
             v0 = np.array([0.5,0.5])
             sampled_velocities = [v0 * np.array([np.cos(theta), np.sin(theta)])
                                   for theta in np.linspace(0, 2 * np.pi, samples)]
         else:
-            preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed  # TODO:
-            # sampled_velocities = [preferred_v * np.array([np.cos(theta), np.cos(theta)]) for theta in np.linspace(0, 2*np.pi, samples)]
+            # compute preferred velocity so that the robot heads to the goal
+            preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
+
+            # prepare sample velocity so that the robot can avoid VO
             th = np.linspace(0, 2 * np.pi, 100)
-            vel = np.linspace(0, 4.0, 100)
+            vel = np.linspace(0, max_speed, 100)
             vv, thth = np.meshgrid(vel, th)
             vx_sample = (vv * np.cos(thth)).flatten()
             vy_sample = (vv * np.sin(thth)).flatten()
@@ -87,75 +91,65 @@ class VelocityObstacle:
             sampled_velocities = np.stack((vx_sample, vy_sample))
             sampled_velocities = np.transpose(sampled_velocities)
             sampled_velocities = np.vstack([sampled_velocities, preferred_v])
-            # sort in order of the difference between the length of the current V and sampled V
-            # sampled_velocities.append(preferred_v)  # Ensure preferred velocity is in the set
-            #
-            # Sort velocities based on their distance to the preferred velocity
             norms = [np.linalg.norm(e - preferred_v) for e in sampled_velocities]
             sorted_indices = np.argsort(norms)
             sampled_velocities = sampled_velocities[sorted_indices]
 
-        # sort candidates in order of XXXX
         for _vA in sampled_velocities:
 
-            circle_center, combined_radius, relative_velocity = self.compute_vo_parameters(pA, vA, pB, vB)
+            # tp1, tp2 are tangent points from pA to the Minkowski sum of rA + rB
+            tp1, tp2 = self.tangent_points(pB, self.rA + self.rB, pA)
+            if tp1 is None and tp2 is None:
+                return preferred_v
 
-            # NOTE: You need to add vB to compute actual VO(vB)
-            tangent_point1, tangent_point2 = self.tangent_points(pB, combined_radius, pA)
-            tangent_point1 += vB * 5
-            tangent_point2 += vB * 5
+            # Add vB to compute actual VO(vB)
+            # Add margin to make the Minkowski sum a bit larger
+            tp1 += vB * self.t_hori + margin * (tp1 - pB)
+            tp2 += vB * self.t_hori + margin * (tp2 - pB)
 
-            is_intersect = False
-            for B in [tangent_point1, tangent_point2]:
-                P = pA
-                Q = pA + _vA
-                A = pA + vB * 5
+            # Check if the point P is the inside of the triangle ABC
+            # and point Q is the outside of the triangle ABC
 
-                if False: # if P is in VO, get out the area asap.
-                    pass
+            P = pA
+            Q = pA + _vA
+            A = pA + vB * self.t_hori
+            B = tp1 + LARGE_NUM * (tp1 - A)
+            C = tp2 + LARGE_NUM * (tp2 - A)
+            tri = [A, B, C]
 
+            is_inside = False
+            if self.in_triangle(tri, P) and self.in_triangle(tri, Q):
+                is_inside = True
 
-                if self.do_intersect(P, Q, A, B):
-                    print('vA is passing through the VO(vB)')
-                    is_intersect += True
-
-            if not is_intersect:
+            if not is_inside:
                 return _vA
 
         return preferred_v
 
-    def tangent_points(self, circle_center, radius, point, extension_length=1.0):
-        import math
+    def tangent_points(self, circle_center, radius, point):
 
-        h, k = circle_center
-        x1, y1 = point
+        Cx, Cy = circle_center
+        Px, Py = point
+        a = radius
 
-        dx = x1 - h
-        dy = y1 - k
+        from math import sqrt, acos, atan2, sin, cos
 
-        # Calculate distance between point and circle center
-        d = math.sqrt(dx ** 2 + dy ** 2)
+        b = sqrt((Px - Cx) ** 2 + (Py - Cy) ** 2)  # hypot() also works here
+        try:
+            th = acos(a / b)  # angle theta
+        except:
+            return None, None
 
-        # Check if point is inside circle
-        if d < radius:
-            raise ValueError("The point is inside the circle. Tangent points are not defined.")
+        d = atan2(Py - Cy, Px - Cx)  # direction angle of point P from C
+        d1 = d + th  # direction angle of point T1 from C
+        d2 = d - th  # direction angle of point T2 from C
 
-        distance_to_midpoint = math.sqrt(d ** 2 - radius ** 2)
+        T1x = Cx + a * cos(d1)
+        T1y = Cy + a * sin(d1)
+        T2x = Cx + a * cos(d2)
+        T2y = Cy + a * sin(d2)
 
-        # Midpoint M
-        Mx = x1 + (distance_to_midpoint / d) * (h - x1)
-        My = y1 + (distance_to_midpoint / d) * (k - y1)
-
-        delta_x = radius * dy / d
-        delta_y = radius * dx / d
-
-        # Tangent points T1 and T2
-        T1x = Mx + delta_x
-        T1y = My - delta_y
-        T2x = Mx - delta_x
-        T2y = My + delta_y
-
-        return (T1x, T1y), (T2x, T2y)
+        return np.array([T1x, T1y]), np.array([T2x, T2y])
 
     def draw(self, pA, vA, pB, vB):
         fig, ax = plt.subplots()
@@ -167,13 +161,11 @@ class VelocityObstacle:
         ax.add_patch(robotB_circle)
 
         # Draw robot A and B trajectories
-        # NOTE: it's super weird. You cannot comment out the line below.
-        ax.arrow(pA[0], pA[1], vA[0], vA[1], head_width=0.2, head_length=0.3, fc='blue', ec='blue', alpha=0.0)
         ax.annotate('', xy=pA + vA, xytext=pA, arrowprops=dict(arrowstyle='->', lw=1.0, color='blue'))
         ax.annotate('', xy=pB + vB, xytext=pB, arrowprops=dict(arrowstyle='->', lw=1.0, color='red'))
         ax.annotate('', xy=vB, xytext=pA, arrowprops=dict(arrowstyle='->', lw=1.0, color='red'))
 
-        circle_center, combined_radius, relative_velocity = self.compute_vo_parameters(pA, vA, pB, vB)
+        combined_radius = self.rA + self.rB
         circle_center_org = (pB[0], pB[1])
 
         # Draw the Minkowski sum circle
@@ -190,10 +182,13 @@ class VelocityObstacle:
         ax.add_patch(triangle)
 
         ax.set_aspect('equal')
+        ax.set_xlim([-2, 4])
+        ax.set_ylim([-3, 6])
         ax.set_xlabel('X-axis')
         ax.set_ylabel('Y-axis')
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         ax.set_title('Velocity Obstacle')
+        plt.tight_layout()
         plt.show()
 
 def main():
@@ -209,8 +204,8 @@ def main():
     pB = np.array([0, 4])
     vB = np.array([2, -0.5])
     vo.draw(pA, vA, pB, vB)
+
     new_vA = vo.desired_velocity(pA, vA, pB, vB)
-    print(new_vA)
     vo.draw(pA, new_vA, pB, vB)
 
 
