@@ -1,7 +1,10 @@
 import numpy as np
+import matplotlib.colors as mcolors
+import random
+
 
 class Robot:
-    def __init__(self, start, end, speed, radius):
+    def __init__(self, start, end, speed, radius, color=None):
         self._position = np.array(start, dtype=np.float64)
         self.start = np.array(start, dtype=np.float64)
         self.end = np.array(end, dtype=np.float64)
@@ -9,10 +12,16 @@ class Robot:
         assert speed < d, "speed is too large."
 
         self.direction = self.end - self._position
-        self.default_velocity = (self.direction / np.linalg.norm(self.direction)) * speed
+        self.default_velocity = (
+            self.direction / np.linalg.norm(self.direction)
+        ) * speed
         self.current_velocity = self.default_velocity
         self.speed = speed
         self.radius = radius
+        if color is None:
+            self.color = random.choice(list(mcolors.cnames.keys()))
+        else:
+            self.color = color
         self.moving = True  # Add a flag to indicate if the robot is moving
 
     def move(self, velocity=None):
@@ -22,8 +31,8 @@ class Robot:
         if velocity is None:
             self.current_velocity = self.current_velocity
         else:
-            d = np.linalg.norm(self._position - self.end)
-            assert np.linalg.norm(velocity) < d, "speed is too large."
+            # d = np.linalg.norm(self._position - self.end)
+            # assert np.linalg.norm(velocity) < d, "speed is too large."
 
             self.current_velocity = velocity
 

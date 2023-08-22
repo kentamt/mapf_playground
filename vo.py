@@ -9,6 +9,7 @@ import matplotlib.patches as patches
 
 LARGE_NUM = 1000000
 
+
 class VelocityObstacle:
     def __init__(self, radius_A, radius_B, time_horizon):
         self.rA = radius_A
@@ -39,7 +40,8 @@ class VelocityObstacle:
 
         # Check if the intersection point lies on segment PQ
         if ((x - P[0]) / (Q[0] - P[0]) >= 0 and (x - P[0]) / (Q[0] - P[0]) <= 1) and (
-                (y - P[1]) / (Q[1] - P[1]) >= 0 and (y - P[1]) / (Q[1] - P[1]) <= 1):
+                (y - P[1]) / (Q[1] - P[1]) >= 0 and (y - P[1]) / (Q[1] - P[1]) <= 1
+        ):
             # Check if the intersection point is in the direction of the ray
             if (x - A[0]) / (B[0] - A[0]) >= 0 and (y - A[1]) / (B[1] - A[1]) >= 0:
                 return True
@@ -47,7 +49,7 @@ class VelocityObstacle:
 
     @staticmethod
     def in_triangle(triangle, point):
-        """ check if the point is inside the triangle """
+        """check if the point is inside the triangle"""
 
         x1 = triangle[0][0]
         y1 = triangle[0][1]
@@ -68,15 +70,17 @@ class VelocityObstacle:
 
     def desired_velocity(self, pA, vA, pB, vB, pG=None, max_speed=1.0):
 
-        margin = 0.00
+        margin = 0.1
         samples = 100
         preferred_v = None
 
         # generate candidate velocities
         if pG is None:
-            v0 = np.array([0.5,0.5])
-            sampled_velocities = [v0 * np.array([np.cos(theta), np.sin(theta)])
-                                  for theta in np.linspace(0, 2 * np.pi, samples)]
+            v0 = np.array([0.5, 0.5])
+            sampled_velocities = [
+                v0 * np.array([np.cos(theta), np.sin(theta)])
+                for theta in np.linspace(0, 2 * np.pi, samples)
+            ]
         else:
             # compute preferred velocity so that the robot heads to the goal
             preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
@@ -97,26 +101,14 @@ class VelocityObstacle:
 
         for _vA in sampled_velocities:
 
-            # tp1, tp2 are tangent points from pA to the Minkowski sum of rA + rB
-            tp1, tp2 = self.tangent_points(pB, self.rA + self.rB, pA)
-            if tp1 is None and tp2 is None:
+            tri = self.compute_vo_triangle(margin, pA, pB, vB)
+            if tri is None:
                 return preferred_v
-
-            # Add vB to compute actual VO(vB)
-            # Add margin to make the Minkowski sum a bit larger
-            tp1 += vB * self.t_hori + margin * (tp1 - pB)
-            tp2 += vB * self.t_hori + margin * (tp2 - pB)
 
             # Check if the point P is the inside of the triangle ABC
             # and point Q is the outside of the triangle ABC
-
             P = pA
             Q = pA + _vA
-            A = pA + vB * self.t_hori
-            B = tp1 + LARGE_NUM * (tp1 - A)
-            C = tp2 + LARGE_NUM * (tp2 - A)
-            tri = [A, B, C]
-
             is_inside = False
             if self.in_triangle(tri, P) and self.in_triangle(tri, Q):
                 is_inside = True
@@ -126,73 +118,125 @@ class VelocityObstacle:
 
         return preferred_v
 
+    def compute_vo_triangle(self, margin, pA, pB, vB):
+        # tp1, tp2 are tangent points from pA to the Minkowski sum of rA + rB
+        tp1, tp2 = self.tangent_points(pB, self.rA + self.rB, pA)
+        if tp1 is None and tp2 is None:
+            tri = None
+        # Add vB to compute actual VO(vB)
+        # Add margin to make the Minkowski sum a bit larger
+        tp1 += vB * self.t_hori + margin * (tp1 - pB)
+        tp2 += vB * self.t_hori + margin * (tp2 - pB)
+        A = pA + vB * self.t_hori
+        B = tp1 + LARGE_NUM * (tp1 - A)
+        C = tp2 + LARGE_NUM * (tp2 - A)
+        tri = [A, B, C]
+        return tri
+
+    @staticmethod
     def tangent_points(self, circle_center, radius, point):
 
-        Cx, Cy = circle_center
-        Px, Py = point
+        c_x, c_y = circle_center
+        p_x, p_y = point
         a = radius
 
         from math import sqrt, acos, atan2, sin, cos
 
-        b = sqrt((Px - Cx) ** 2 + (Py - Cy) ** 2)  # hypot() also works here
+        b = sqrt((p_x - c_x) ** 2 + (p_y - c_y) ** 2)  # hypot() also works here
         try:
             th = acos(a / b)  # angle theta
         except:
             return None, None
 
-        d = atan2(Py - Cy, Px - Cx)  # direction angle of point P from C
+        d = atan2(p_y - c_y, p_x - c_x)  # direction angle of point P from C
         d1 = d + th  # direction angle of point T1 from C
         d2 = d - th  # direction angle of point T2 from C
 
-        T1x = Cx + a * cos(d1)
-        T1y = Cy + a * sin(d1)
-        T2x = Cx + a * cos(d2)
-        T2y = Cy + a * sin(d2)
+        t1_x = c_x + a * cos(d1)
+        t1_y = c_y + a * sin(d1)
+        t2_x = c_x + a * cos(d2)
+        t2_y = c_y + a * sin(d2)
 
-        return np.array([T1x, T1y]), np.array([T2x, T2y])
+        return np.array([t1_x, t1_y]), np.array([t2_x, t2_y])
 
     def draw(self, pA, vA, pB, vB):
         fig, ax = plt.subplots()
 
         # Draw robot A and B as circles
-        robotA_circle = patches.Circle(pA, self.rA, fill=True, color='lightgreen', alpha=0.5, label='Robot A')
-        robotB_circle = patches.Circle(pB, self.rB, fill=True, color='blue', alpha=0.5, label='Robot B')
+        robotA_circle = patches.Circle(
+            pA, self.rA, fill=True, color="lightgreen", alpha=0.5, label="Robot A"
+        )
+        robotB_circle = patches.Circle(
+            pB, self.rB, fill=True, color="blue", alpha=0.5, label="Robot B"
+        )
         ax.add_patch(robotA_circle)
         ax.add_patch(robotB_circle)
 
         # Draw robot A and B trajectories
-        ax.annotate('', xy=pA + vA, xytext=pA, arrowprops=dict(arrowstyle='->', lw=1.0, color='blue'))
-        ax.annotate('', xy=pB + vB, xytext=pB, arrowprops=dict(arrowstyle='->', lw=1.0, color='red'))
-        ax.annotate('', xy=vB, xytext=pA, arrowprops=dict(arrowstyle='->', lw=1.0, color='red'))
+        ax.annotate(
+            "",
+            xy=pA + vA,
+            xytext=pA,
+            arrowprops=dict(arrowstyle="->", lw=1.0, color="blue"),
+        )
+        ax.annotate(
+            "",
+            xy=pB + vB,
+            xytext=pB,
+            arrowprops=dict(arrowstyle="->", lw=1.0, color="red"),
+        )
+        ax.annotate(
+            "", xy=vB, xytext=pA, arrowprops=dict(arrowstyle="->", lw=1.0, color="red")
+        )
 
         combined_radius = self.rA + self.rB
         circle_center_org = (pB[0], pB[1])
 
         # Draw the Minkowski sum circle
-        circle = patches.Circle(circle_center_org, combined_radius, fill=True, color='skyblue', alpha=0.5, linestyle='-', label='Minkowski sum')
+        circle = patches.Circle(
+            circle_center_org,
+            combined_radius,
+            fill=True,
+            color="skyblue",
+            alpha=0.5,
+            linestyle="-",
+            label="Minkowski sum",
+        )
         ax.add_patch(circle)
 
         # Calculate the tangent points
-        tangent_point1, tangent_point2 = self.tangent_points(circle_center_org, combined_radius, pA)
+        tangent_point1, tangent_point2 = self.tangent_points(
+            circle_center_org, combined_radius, pA
+        )
 
         # Draw the VO cone using tangent lines
-        triangle = patches.Polygon([pA, tangent_point1, tangent_point2], alpha=0.5, closed=True, color='gray')
+        triangle = patches.Polygon(
+            [pA, tangent_point1, tangent_point2], alpha=0.5, closed=True, color="gray"
+        )
         ax.add_patch(triangle)
-        triangle = patches.Polygon([pA + vB, tangent_point1 + vB, tangent_point2 + vB], alpha=0.5, closed=True, color='gray', label='VO cone')#
+        triangle = patches.Polygon(
+            [pA + vB, tangent_point1 + vB, tangent_point2 + vB],
+            alpha=0.5,
+            closed=True,
+            color="gray",
+            label="VO cone",
+        )  #
         ax.add_patch(triangle)
 
-        ax.set_aspect('equal')
+        ax.set_aspect("equal")
         ax.set_xlim([-2, 4])
         ax.set_ylim([-3, 6])
-        ax.set_xlabel('X-axis')
-        ax.set_ylabel('Y-axis')
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        ax.set_title('Velocity Obstacle')
+        ax.set_xlabel("X-axis")
+        ax.set_ylabel("Y-axis")
+        ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        ax.set_title("Velocity Obstacle")
         plt.tight_layout()
         plt.show()
 
+
 def main():
     import warnings
+
     warnings.filterwarnings("ignore", category=matplotlib.MatplotlibDeprecationWarning)
 
     # Usage
@@ -209,5 +253,5 @@ def main():
     vo.draw(pA, new_vA, pB, vB)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
