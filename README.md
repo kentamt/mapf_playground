@@ -1,3 +1,7 @@
 # velocity_obstacle
 
-![vo](https://github.com/kentamt/velocity_obstacle/assets/3883043/9b96a608-81ea-4c1c-9590-3378a965e4f6)
+VO
+![vo](https://github.com/kentamt/velocity_obstacle/assets/3883043/3a314b17-5bda-4813-809f-104f4043c358)
+
+RVO
+![rvo](https://github.com/kentamt/velocity_obstacle/assets/3883043/afaaa27b-d535-4a1d-a9b5-600bc9be49a2)
