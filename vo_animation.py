@@ -20,8 +20,8 @@ def main():
     # robotB = Robot(start=(0, 0), end=(10, 4), speed=0.20, radius=1.0, color="green")
 
     fig, ax = plt.subplots()
-    save_gif = False
-    fps = 24
+    save_gif = True
+    fps = 10
 
     # robots
     rA = robotA.radius
@@ -64,7 +64,7 @@ def main():
 
     # VO
     t_hori = 1
-    vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=t_hori, rvo=True)
+    vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=t_hori, rvo=False)
     triangle_coords = np.array([[1, 1], [2, 2.5], [3, 1]])
     triangle = patches.Polygon(triangle_coords, alpha=0.5, closed=True, color="gray")
 
@@ -82,7 +82,7 @@ def main():
     ax.set_aspect("equal")
 
     ax.set_ylim((-5, 15))
-    ax.set_ylim((-5, 15))
+    ax.set_ylim((-5, 5))
 
 
     def init():

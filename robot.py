@@ -1,10 +1,11 @@
+import uuid
 import numpy as np
 import matplotlib.colors as mcolors
 import random
 
 
 class Robot:
-    def __init__(self, start, end, speed, radius, color=None):
+    def __init__(self, start, end, speed, radius, color=None, label=None):
         self._position = np.array(start, dtype=np.float64)
         self.start = np.array(start, dtype=np.float64)
         self.end = np.array(end, dtype=np.float64)
@@ -22,8 +23,19 @@ class Robot:
             self.color = random.choice(list(mcolors.cnames.keys()))
         else:
             self.color = color
+
+        if label is None:
+            self.label = uuid.uuid1()
+        else:
+            self.label = label
+
         self.moving = True  # Add a flag to indicate if the robot is moving
 
+    def __str__(self):
+        return self.label
+
+    def __repr__(self):
+        return self.label
     def move(self, velocity=None):
         if not self.moving:  # If the robot isn't moving, do nothing
             return
