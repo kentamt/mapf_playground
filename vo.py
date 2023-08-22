@@ -71,7 +71,7 @@ class VelocityObstacle:
 
     def desired_velocity(self, pA, vA, pB, vB, pG, max_speed=1.0, verbose=False):
 
-        margin = 0.0
+        margin = 0.2
 
         # compute preferred velocity so that the robot heads to the goal
         preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
@@ -106,10 +106,10 @@ class VelocityObstacle:
 
     def desired_velocity_ma(self, pA, vA, pG, vo_union, max_speed=1.0, verbose=False):
 
-        margin = 0.0
 
         # compute preferred velocity so that the robot heads to the goal
         preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
+        # preferred_v = 0.2 * preferred_v + 0.8 * vA
 
         # prepare sample velocity so that the robot can avoid VO
         sampled_velocities = self.__sampled_velocities(max_speed, preferred_v, vA)

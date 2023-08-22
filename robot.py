@@ -36,7 +36,7 @@ class Robot:
 
     def __repr__(self):
         return self.label
-    def move(self, velocity=None):
+    def move(self, velocity=None, dt=1):
         if not self.moving:  # If the robot isn't moving, do nothing
             return
 
@@ -49,11 +49,12 @@ class Robot:
             self.current_velocity = velocity
 
         remaining_distance = np.linalg.norm(self.end - self._position)
-        if remaining_distance <= self.speed:  # Check if we're close to the end point
+        if remaining_distance <= self.speed * dt:  # Check if we're close to the end point
             self._position = self.end
             self.moving = False
+            self.current_velocity = np.array([0,0])
         else:
-            self._position += self.current_velocity
+            self._position += self.current_velocity * dt
 
     @property
     def position(self):

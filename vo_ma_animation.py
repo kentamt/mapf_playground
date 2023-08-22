@@ -14,24 +14,28 @@ matplotlib.use("TkAgg")
 
 def main():
     # Define initial and final positions for both robots
-    # robotA = Robot(start=(0, 0), end=(15, 0), speed=0.5, radius=0.5, color="red", label='RobotA')
-    # robotB = Robot(start=(0, 2), end=(15, 2), speed=0.5, radius=0.5, color="green", label='RobotB')
-    # robotC = Robot(start=(0, 4), end=(15, 4), speed=0.5, radius=0.5, color="blue", label='RobotC')
-    # robotD = Robot(start=(15, 0), end=(0, 0), speed=0.5, radius=0.5, color="orange", label='RobotD')
-    # robotE = Robot(start=(15, 2), end=(0, 2), speed=0.5, radius=0.5, color="black", label='RobotE')
-    # robotF = Robot(start=(15, 4), end=(0, 4), speed=0.5, radius=0.5, color="pink", label='RobotF')
+    # robotA = Robot(start=(0, 0), end=(15, 0), speed=1, radius=0.5, color="red", label='RobotA')
+    # robotB = Robot(start=(0, 2), end=(15, 2), speed=1, radius=0.5, color="green", label='RobotB')
+    # robotC = Robot(start=(0, 4), end=(15, 4), speed=1, radius=0.5, color="blue", label='RobotC')
+    # robotD = Robot(start=(15, 0), end=(0, 0), speed=1, radius=0.5, color="orange", label='RobotD')
+    # robotE = Robot(start=(15, 2), end=(0, 2), speed=1, radius=0.5, color="black", label='RobotE')
+    # robotF = Robot(start=(15, 4), end=(0, 4), speed=1, radius=0.5, color="pink", label='RobotF')
     # robots = [robotA, robotB, robotC, robotD, robotE, robotF]
-    robotA = Robot(start=(0, 0), end=(10, 10), speed=0.2, radius=1.0, color="red", label='RobotA')
-    robotB = Robot(start=(10, 2), end=(2, 5), speed=0.2, radius=1.0, color="green", label='RobotB')
-    robotC = Robot(start=(0, 4), end=(8, 5), speed=0.2, radius=1.0, color="blue", label='RobotC')
-    robotD = Robot(start=(0, 10), end=(5, 0), speed=0.2, radius=1.0, color="orange", label='RobotD')
-    robotE = Robot(start=(6, 10), end=(8, 0), speed=0.2, radius=1.0, color="black", label='RobotE')
-    robots = [robotA, robotB, robotC, robotD, robotE]
+    robotA = Robot(start=(0, 0), end=(10, 10), speed=3, radius=1.0, color="red", label='RobotA')
+    robotB = Robot(start=(10, 2), end=(2, 5), speed=3, radius=1.0, color="green", label='RobotB')
+    robotC = Robot(start=(0, 4), end=(8, 5), speed=3, radius=1.0, color="blue", label='RobotC')
+    robotD = Robot(start=(0, 10), end=(5, 0), speed=3, radius=1.0, color="orange", label='RobotD')
+    robotE = Robot(start=(6, 10), end=(8, 0), speed=3, radius=1.0, color="black", label='RobotE')
+    robots = [robotA, robotB] # , robotC, robotD, robotE]
+
 
     fig, ax = plt.subplots()
     save_gif = False
-    fps = 10
-    draw_vo = True
+    fps = 24
+    draw_vo = False
+    is_rvo = True
+    margin = 0.2
+    dt = 0.1
 
     # robots
     points = {}
@@ -43,7 +47,7 @@ def main():
     # trajectory
     trajs = {}
     for r in robots:
-        (trajA,) = ax.plot([], [], "--", color=r.color)
+        (trajA,) = ax.plot([], [], "-", linewidth=0.8, color=r.color)
         trajs[r.label] = {}
         trajs[r.label]['traj'] = trajA
         trajs[r.label]['x'] = []
@@ -67,7 +71,7 @@ def main():
         for robot_b in other_robots:
             vo = VelocityObstacle(radius_A=robot_a.radius,
                                   radius_B=robot_b.radius,
-                                  time_horizon=t_hori, rvo=True)
+                                  time_horizon=t_hori, rvo=is_rvo)
             vos[(robot_a.label, robot_b.label)] = vo
 
             triangle_coords = np.array([[1, 1], [2, 2.5], [3, 1]])
@@ -126,7 +130,7 @@ def main():
             other_robots = [x for x in robots if x != robot_a]
             for robot_b in other_robots:
                 _vo = vos[(robot_a.label, robot_b.label)]
-                _tri = _vo.compute_vo_triangle(0.0,
+                _tri = _vo.compute_vo_triangle(margin,
                                                robot_a.position, robot_a.velocity,
                                                robot_b.position, robot_b.velocity)
                 __update_triangles(_tri, robot_a, robot_b)
@@ -135,6 +139,16 @@ def main():
 
     def update(frame):
         print('update robots')
+
+
+        # all_robots_stop = True
+        # for robot_a in robots:
+        #     if robot_a.moving:
+        #         all_robots_stop *= False
+        #
+        # if all_robots_stop:
+        #     plt.close(fig)
+
 
         vo_unions = {}
         for robot_a in robots:
@@ -150,7 +164,7 @@ def main():
 
                 # compute vo
                 _vo = vos[(robot_a.label, robot_b.label)]
-                _tri = _vo.compute_vo_triangle(0.0, _pA, _vA, _pB, _vB)
+                _tri = _vo.compute_vo_triangle(margin, _pA, _vA, _pB, _vB)
                 if _tri is None:
                     _tri = [0, 0, 0]
 
@@ -172,7 +186,7 @@ def main():
                                            robot_a.velocity,
                                            robot_a.end,
                                            vo_union, max_speed=robot_a.speed)
-            robot_a.move(_n_vA)
+            robot_a.move(_n_vA, dt=dt)
 
         return __plot_list()
 
@@ -207,10 +221,11 @@ def main():
 
     # Animation
     ani = FuncAnimation(
-        fig, update, frames=300, init_func=init, blit=False, interval=1000.0 / fps
+        fig, update, frames=100, init_func=init, blit=False, interval=1000.0 / fps
     )
+
     if save_gif:
-        writergif = PillowWriter(fps=30)
+        writergif = PillowWriter(fps=15)
         gif_name = "anime/vo.gif"
         writergif.setup(fig, gif_name, dpi=300)
         ani.save(gif_name, writer=writergif)

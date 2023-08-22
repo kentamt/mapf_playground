@@ -20,7 +20,7 @@ def main():
     # robotB = Robot(start=(0, 0), end=(10, 4), speed=0.20, radius=1.0, color="green")
 
     fig, ax = plt.subplots()
-    save_gif = True
+    save_gif = False
     fps = 10
 
     # robots
