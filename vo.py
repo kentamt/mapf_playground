@@ -11,7 +11,8 @@ LARGE_NUM = 1000000
 
 
 class VelocityObstacle:
-    def __init__(self, radius_A, radius_B, time_horizon):
+    def __init__(self, radius_A, radius_B, time_horizon, rvo=False):
+        self.rvo = rvo
         self.rA = radius_A
         self.rB = radius_B
         self.t_hori = time_horizon
@@ -63,45 +64,24 @@ class VelocityObstacle:
         c1 = (x2 - x1) * (yp - y1) - (y2 - y1) * (xp - x1)
         c2 = (x3 - x2) * (yp - y2) - (y3 - y2) * (xp - x2)
         c3 = (x1 - x3) * (yp - y3) - (y1 - y3) * (xp - x3)
-        if (c1 < 0 and c2 < 0 and c3 < 0) or (c1 > 0 and c2 > 0 and c3 > 0):
+        if (c1 <= 0 and c2 <= 0 and c3 <= 0) or (c1 >= 0 and c2 >= 0 and c3 >= 0):
             return True
         else:
             return False
 
-    def desired_velocity(self, pA, vA, pB, vB, pG=None, max_speed=1.0):
+    def desired_velocity(self, pA, vA, pB, vB, pG, max_speed=1.0, verbose=False):
 
-        margin = 0.1
-        samples = 100
-        preferred_v = None
+        margin = 0.3
 
-        # generate candidate velocities
-        if pG is None:
-            v0 = np.array([0.5, 0.5])
-            sampled_velocities = [
-                v0 * np.array([np.cos(theta), np.sin(theta)])
-                for theta in np.linspace(0, 2 * np.pi, samples)
-            ]
-        else:
-            # compute preferred velocity so that the robot heads to the goal
-            preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
+        # compute preferred velocity so that the robot heads to the goal
+        preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
 
-            # prepare sample velocity so that the robot can avoid VO
-            th = np.linspace(0, 2 * np.pi, 100)
-            vel = np.linspace(0, max_speed, 100)
-            vv, thth = np.meshgrid(vel, th)
-            vx_sample = (vv * np.cos(thth)).flatten()
-            vy_sample = (vv * np.sin(thth)).flatten()
-
-            sampled_velocities = np.stack((vx_sample, vy_sample))
-            sampled_velocities = np.transpose(sampled_velocities)
-            sampled_velocities = np.vstack([sampled_velocities, preferred_v])
-            norms = [np.linalg.norm(e - preferred_v) for e in sampled_velocities]
-            sorted_indices = np.argsort(norms)
-            sampled_velocities = sampled_velocities[sorted_indices]
+        # prepare sample velocity so that the robot can avoid VO
+        sampled_velocities = self.__sampled_velocities(max_speed, preferred_v, vA)
 
         for _vA in sampled_velocities:
 
-            tri = self.compute_vo_triangle(margin, pA, pB, vB)
+            tri = self.compute_vo_triangle(margin, pA, vA, pB, vB)
             if tri is None:
                 return preferred_v
 
@@ -110,31 +90,83 @@ class VelocityObstacle:
             P = pA
             Q = pA + _vA
             is_inside = False
-            if self.in_triangle(tri, P) and self.in_triangle(tri, Q):
+            if self.in_triangle(tri, Q):
                 is_inside = True
 
             if not is_inside:
+                if verbose:
+                    print(f'tri: {tri}')
+                    print(f'outside: {P}, {Q}')
                 return _vA
+
+        if verbose:
+            print('no candidate')
+            exit()
 
         return preferred_v
 
-    def compute_vo_triangle(self, margin, pA, pB, vB):
+    def __sampled_velocities(self, max_speed, preferred_v, vA):
+        direction = np.arctan2(vA[1], vA[0])
+        th = np.linspace(direction, direction + np.pi, 100)
+        vel = np.linspace(0, max_speed, 100)
+        vv, thth = np.meshgrid(vel, th)
+        vx_sample = (vv * np.cos(thth)).flatten()
+        vy_sample = (vv * np.sin(thth)).flatten()
+        sampled_velocities = np.stack((vx_sample, vy_sample))
+        sampled_velocities = np.transpose(sampled_velocities)
+        sampled_velocities = np.vstack([sampled_velocities, preferred_v])
+        norms = [np.linalg.norm(e - preferred_v) for e in sampled_velocities]
+        sorted_indices = np.argsort(norms)
+        sampled_velocities = sampled_velocities[sorted_indices]
+        return sampled_velocities
+
+    def compute_vo_triangle(self, margin, pA, vA, pB, vB):
+
         # tp1, tp2 are tangent points from pA to the Minkowski sum of rA + rB
         tp1, tp2 = self.tangent_points(pB, self.rA + self.rB, pA)
         if tp1 is None and tp2 is None:
             tri = None
+
+        if not self.rvo:
+            # Add vB to compute actual VO(vB) and margin to make the Minkowski sum a bit larger
+            tp1 += vB * self.t_hori + margin * (tp1 - pB)
+            tp2 += vB * self.t_hori + margin * (tp2 - pB)
+
+            A = pA + vB * self.t_hori
+            B = tp1 + LARGE_NUM * (tp1 - A)
+            C = tp2 + LARGE_NUM * (tp2 - A)
+        else:
+            r = 0.5
+            tp1 += (vB - r * (vB - vA)) * self.t_hori + margin * (tp1 - pB)
+            tp2 += (vB - r * (vB - vA)) * self.t_hori + margin * (tp2 - pB)
+            A = pA + (vB - r * (vB - vA)) * self.t_hori
+            B = tp1 + LARGE_NUM * (tp1 - A)
+            C = tp2 + LARGE_NUM * (tp2 - A)
+
+        tri = [A, B, C]
+
+        return tri
+
+    def compute_rvo_triangle(self, margin, pA, pB, vA, vB):
+
+        # tp1, tp2 are tangent points from pA to the Minkowski sum of rA + rB
+        tp1, tp2 = self.tangent_points(pB, self.rA + self.rB, pA)
+        if tp1 is None and tp2 is None:
+            tri = None
+
         # Add vB to compute actual VO(vB)
         # Add margin to make the Minkowski sum a bit larger
-        tp1 += vB * self.t_hori + margin * (tp1 - pB)
-        tp2 += vB * self.t_hori + margin * (tp2 - pB)
-        A = pA + vB * self.t_hori
+        r = 0.5
+        tp1 += (vB - r * (vB - vA)) * self.t_hori + margin * (tp1 - pB)
+        tp2 += (vB - r * (vB - vA)) * self.t_hori + margin * (tp2 - pB)
+        A = pA + (vB - r * (vB - vA)) * self.t_hori
         B = tp1 + LARGE_NUM * (tp1 - A)
         C = tp2 + LARGE_NUM * (tp2 - A)
         tri = [A, B, C]
         return tri
 
     @staticmethod
-    def tangent_points(self, circle_center, radius, point):
+    def tangent_points(circle_center, radius, point):
 
         c_x, c_y = circle_center
         p_x, p_y = point
@@ -159,7 +191,7 @@ class VelocityObstacle:
 
         return np.array([t1_x, t1_y]), np.array([t2_x, t2_y])
 
-    def draw(self, pA, vA, pB, vB):
+    def draw(self, pA, vA, pB, vB, new_vA = None):
         fig, ax = plt.subplots()
 
         # Draw robot A and B as circles
@@ -173,12 +205,22 @@ class VelocityObstacle:
         ax.add_patch(robotB_circle)
 
         # Draw robot A and B trajectories
-        ax.annotate(
-            "",
-            xy=pA + vA,
-            xytext=pA,
-            arrowprops=dict(arrowstyle="->", lw=1.0, color="blue"),
-        )
+
+        if new_vA is None:
+            ax.annotate(
+                "",
+                xy=pA + vA,
+                xytext=pA,
+                arrowprops=dict(arrowstyle="->", lw=1.0, color="blue"),
+            )
+        else:
+            ax.annotate(
+                "",
+                xy=pA + new_vA,
+                xytext=pA,
+                arrowprops=dict(arrowstyle="->", lw=1.0, color="blue"),
+            )
+
         ax.annotate(
             "",
             xy=pB + vB,
@@ -204,18 +246,17 @@ class VelocityObstacle:
         )
         ax.add_patch(circle)
 
-        # Calculate the tangent points
-        tangent_point1, tangent_point2 = self.tangent_points(
-            circle_center_org, combined_radius, pA
-        )
+        # Draw the VO cone using tangent lines from robotA
+        # tri = self.compute_vo_triangle(0.0, pA, pB, vB)
+        # triangle = patches.Polygon(
+        #    [tri[0] - vB, tri[1] - vB, tri[2] - vB], alpha=0.5, closed=True, color="gray"
+        # )
+        # ax.add_patch(triangle)
 
-        # Draw the VO cone using tangent lines
+        # Draw the VO cone using tangent lines from robotA + vB
+        tri = self.compute_vo_triangle(0.0, pA, vA, pB, vB)
         triangle = patches.Polygon(
-            [pA, tangent_point1, tangent_point2], alpha=0.5, closed=True, color="gray"
-        )
-        ax.add_patch(triangle)
-        triangle = patches.Polygon(
-            [pA + vB, tangent_point1 + vB, tangent_point2 + vB],
+            tri,
             alpha=0.5,
             closed=True,
             color="gray",
@@ -223,9 +264,11 @@ class VelocityObstacle:
         )  #
         ax.add_patch(triangle)
 
+        ax.plot([pA[0], pA[0] + vB[0], pA[0] + vA[0], pA[0]], [pA[1], pA[1] + vB[1], pA[1] + vA[1], pA[1]], '-')
+
         ax.set_aspect("equal")
-        ax.set_xlim([-2, 4])
-        ax.set_ylim([-3, 6])
+        ax.set_xlim([-2, 8])
+        ax.set_ylim([-3, 8])
         ax.set_xlabel("X-axis")
         ax.set_ylabel("Y-axis")
         ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
@@ -236,21 +279,29 @@ class VelocityObstacle:
 
 def main():
     import warnings
-
+    from robot import Robot
     warnings.filterwarnings("ignore", category=matplotlib.MatplotlibDeprecationWarning)
 
-    # Usage
-    rA = 0.5
-    rB = 0.5
-    vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=1)
-    pA = np.array([0, 0])
-    vA = np.array([2, 0.5])
-    pB = np.array([0, 4])
-    vB = np.array([2, -0.5])
+    # robots
+    robotA = Robot(start=(0, 0), end=(5, 0), speed=1.0, radius=1.5, color="red")
+    robotB = Robot(start=(5, 0), end=(0, 0), speed=1.0, radius=1.5, color="green")
+    rA = robotA.radius
+    rB = robotB.radius
+    pA = robotA.position
+    pB = robotB.position
+    vA = robotA.velocity
+    vB = robotB.velocity
+    vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=1, rvo=True)
     vo.draw(pA, vA, pB, vB)
 
-    new_vA = vo.desired_velocity(pA, vA, pB, vB)
-    vo.draw(pA, new_vA, pB, vB)
+    new_vA = vo.desired_velocity(pA, vA, pB, vB, pG=robotA.end, verbose=True)
+    vo.draw(pA, vA, pB, vB, new_vA=new_vA)
+
+    new_vB = vo.desired_velocity(pB, vB, pA, vA, pG=robotB.end, verbose=True)
+    vo.draw(pB, vB, pA, vA, new_vA=new_vB)
+
+
+
 
 
 if __name__ == "__main__":

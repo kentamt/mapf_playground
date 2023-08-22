@@ -12,12 +12,12 @@ matplotlib.use("TkAgg")
 
 def main():
     # Define initial and final positions for both robots
-    robotA = Robot(start=(0, 0), end=(10, 0), speed=0.10, radius=1.5, color="red")
-    robotB = Robot(start=(10, 0), end=(0, 0), speed=0.10, radius=1.6, color="green")
-    # robotA = Robot(start=(0, 10), end=(10, 0), speed=0.10, radius=1.5)
-    # robotB = Robot(start=(0, 0), end=(10, 10), speed=0.10, radius=1.0)
-    # robotA = Robot(start=(0, 5), end=(10, 0), speed=0.12, radius=1.5)
-    # robotB = Robot(start=(0, 0), end=(10, 4), speed=0.10, radius=1.0)
+    robotA = Robot(start=(0, 0), end=(10, 0), speed=0.30, radius=1.5, color="red")
+    robotB = Robot(start=(10, 0), end=(0, 0), speed=0.3, radius=1.6, color="green")
+    # robotA = Robot(start=(0, 10), end=(10, 0), speed=0.30, radius=1.5, color="red")
+    # robotB = Robot(start=(0, 0), end=(10, 10), speed=0.30, radius=1.0, color="green")
+    # robotA = Robot(start=(0, 5), end=(10, 0), speed=0.20, radius=1.5, color="red")
+    # robotB = Robot(start=(0, 0), end=(10, 4), speed=0.20, radius=1.0, color="green")
 
     fig, ax = plt.subplots()
     save_gif = False
@@ -64,7 +64,7 @@ def main():
 
     # VO
     t_hori = 1
-    vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=t_hori)
+    vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=t_hori, rvo=True)
     triangle_coords = np.array([[1, 1], [2, 2.5], [3, 1]])
     triangle = patches.Polygon(triangle_coords, alpha=0.5, closed=True, color="gray")
 
@@ -72,9 +72,6 @@ def main():
     ax.add_patch(pointB)
     ax.add_patch(point_minsum)
     ax.add_patch(triangle)
-
-    ax.set_ylim((-5, 15))
-    ax.set_xlim((-5, 15))
     ax.legend(
         loc="upper center",
         bbox_to_anchor=(0.5, 1.05),
@@ -83,6 +80,10 @@ def main():
         shadow=True,
     )
     ax.set_aspect("equal")
+
+    ax.set_ylim((-5, 15))
+    ax.set_ylim((-5, 15))
+
 
     def init():
         _pA = robotA.position
@@ -159,7 +160,7 @@ def main():
         _vA = robotA.velocity
         _vB = robotB.velocity
 
-        _tri = vo.compute_vo_triangle(0.0, _pA, _pB, _vB)
+        _tri = vo.compute_vo_triangle(0.0, _pA, _vA, _pB, _vB)
         if _tri is None:
             _tri = [0, 0, 0]
         triangle.set_xy(_tri)
@@ -199,7 +200,6 @@ def main():
         ani.save(gif_name, writer=writergif)
     else:
         plt.show()
-
 
 if __name__ == "__main__":
     main()

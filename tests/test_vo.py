@@ -8,6 +8,7 @@ class TestVelocityObstacle:
         self.vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=1)
 
     def test_do_intersect(self):
+
         # cross
         P = [0, 0]
         Q = [2, 2]
@@ -38,12 +39,12 @@ class TestVelocityObstacle:
         # on the vertex
         triangle = [[0, 0], [1, 0], [1, 1]]
         point = [0.0, 0.0]
-        assert self.vo.in_triangle(triangle, point) == False
+        assert self.vo.in_triangle(triangle, point) == True
 
         # on the edge
         triangle = [[0, 0], [1, 0], [1, 1]]
         point = [0.5, 0.5]
-        assert self.vo.in_triangle(triangle, point) == False
+        assert self.vo.in_triangle(triangle, point) == True
 
         # outside
         triangle = [[0, 0], [1, 0], [1, 1]]
