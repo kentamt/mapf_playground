@@ -7,4 +7,4 @@ RVO
 ![rvo](https://github.com/kentamt/velocity_obstacle/assets/3883043/afaaa27b-d535-4a1d-a9b5-600bc9be49a2)
 
 RVO MA
-![rvo](https://github.com/kentamt/velocity_obstacle/assets/3883043/62eeeb6b-3e65-40d8-be64-b697d1af068c)
+![rvo_ma](https://github.com/kentamt/velocity_obstacle/assets/3883043/5dc6ac69-81fa-461f-8da9-243791cedff3)
