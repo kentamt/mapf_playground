@@ -7,7 +7,7 @@ import matplotlib.patches as patches
 # Warning
 # matplotlib.use('TkAgg')
 
-LARGE_NUM = 1000000
+LARGE_NUM = 10000
 
 
 class VelocityObstacle:
@@ -71,7 +71,7 @@ class VelocityObstacle:
 
     def desired_velocity(self, pA, vA, pB, vB, pG, max_speed=1.0, verbose=False):
 
-        margin = 0.3
+        margin = 0.0
 
         # compute preferred velocity so that the robot heads to the goal
         preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
@@ -101,9 +101,47 @@ class VelocityObstacle:
 
         if verbose:
             print('no candidate')
-            exit()
 
         return preferred_v
+
+
+    def desired_velocity_ma(self, pA, vA, pG, vo_union, max_speed=1.0, verbose=False):
+
+        margin = 0.0
+
+        # compute preferred velocity so that the robot heads to the goal
+        preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
+
+        # prepare sample velocity so that the robot can avoid VO
+        sampled_velocities = self.__sampled_velocities(max_speed, preferred_v, vA)
+
+
+        for _vA in sampled_velocities:
+            is_outside = True
+            for tri in vo_union:
+
+                if tri is None:
+                    return preferred_v
+
+                # Check if the point P is the inside of the triangle ABC
+                # and point Q is the outside of the triangle ABC
+                P = pA
+                Q = pA + _vA
+                is_inside = False
+                if self.in_triangle(tri, Q):
+                    is_outside = False
+
+            if is_outside:
+                if verbose:
+                    print(f'tri: {tri}')
+                    print(f'outside: {P}, {Q}')
+                return _vA
+
+        if verbose:
+            print('no candidate')
+
+        return preferred_v
+
 
     def __sampled_velocities(self, max_speed, preferred_v, vA):
         direction = np.arctan2(vA[1], vA[0])
