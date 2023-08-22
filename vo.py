@@ -104,7 +104,6 @@ class VelocityObstacle:
 
         return preferred_v
 
-
     def desired_velocity_ma(self, pA, vA, pG, vo_union, max_speed=1.0, verbose=False):
 
         margin = 0.0
@@ -114,7 +113,6 @@ class VelocityObstacle:
 
         # prepare sample velocity so that the robot can avoid VO
         sampled_velocities = self.__sampled_velocities(max_speed, preferred_v, vA)
-
 
         for _vA in sampled_velocities:
             is_outside = True
@@ -141,7 +139,6 @@ class VelocityObstacle:
             print('no candidate')
 
         return preferred_v
-
 
     def __sampled_velocities(self, max_speed, preferred_v, vA):
         direction = np.arctan2(vA[1], vA[0])
@@ -229,7 +226,7 @@ class VelocityObstacle:
 
         return np.array([t1_x, t1_y]), np.array([t2_x, t2_y])
 
-    def draw(self, pA, vA, pB, vB, new_vA = None):
+    def draw(self, pA, vA, pB, vB, new_vA=None):
         fig, ax = plt.subplots()
 
         # Draw robot A and B as circles
@@ -337,9 +334,6 @@ def main():
 
     new_vB = vo.desired_velocity(pB, vB, pA, vA, pG=robotB.end, verbose=True)
     vo.draw(pB, vB, pA, vA, new_vA=new_vB)
-
-
-
 
 
 if __name__ == "__main__":
