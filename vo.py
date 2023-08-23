@@ -125,7 +125,6 @@ class VelocityObstacle:
                 # and point Q is the outside of the triangle ABC
                 P = pA
                 Q = pA + _vA
-                is_inside = False
                 if self.in_triangle(tri, Q):
                     is_outside = False
 
@@ -141,6 +140,8 @@ class VelocityObstacle:
         return preferred_v
 
     def __sampled_velocities(self, max_speed, preferred_v, vA):
+        from scipy.spatial import distance
+
         direction = np.arctan2(vA[1], vA[0])
         th = np.linspace(direction, direction + np.pi, 100)
         vel = np.linspace(0, max_speed, 100)
@@ -151,6 +152,7 @@ class VelocityObstacle:
         sampled_velocities = np.transpose(sampled_velocities)
         sampled_velocities = np.vstack([sampled_velocities, preferred_v])
         norms = [np.linalg.norm(e - preferred_v) for e in sampled_velocities]
+
         sorted_indices = np.argsort(norms)
         sampled_velocities = sampled_velocities[sorted_indices]
         return sampled_velocities

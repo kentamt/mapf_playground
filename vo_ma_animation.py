@@ -21,12 +21,13 @@ def main():
     # robotE = Robot(start=(15, 2), end=(0, 2), speed=1, radius=0.5, color="black", label='RobotE')
     # robotF = Robot(start=(15, 4), end=(0, 4), speed=1, radius=0.5, color="pink", label='RobotF')
     # robots = [robotA, robotB, robotC, robotD, robotE, robotF]
-    robotA = Robot(start=(0, 0), end=(10, 10), speed=3, radius=1.0, color="red", label='RobotA')
-    robotB = Robot(start=(10, 2), end=(2, 5), speed=3, radius=1.0, color="green", label='RobotB')
-    robotC = Robot(start=(0, 4), end=(8, 5), speed=3, radius=1.0, color="blue", label='RobotC')
-    robotD = Robot(start=(0, 10), end=(5, 0), speed=3, radius=1.0, color="orange", label='RobotD')
-    robotE = Robot(start=(6, 10), end=(8, 0), speed=3, radius=1.0, color="black", label='RobotE')
-    robots = [robotA, robotB] # , robotC, robotD, robotE]
+    robotA = Robot(start=(0, 0), end=(10, 10), speed=1, radius=1., max_speed=3, color="red", label='RobotA')
+    robotB = Robot(start=(10, 2), end=(2, 5), speed=1, radius=1., max_speed=3,color="green", label='RobotB')
+    robotC = Robot(start=(0, 4), end=(8, 5), speed=1, radius=1., max_speed=3,color="blue", label='RobotC')
+    robotD = Robot(start=(0, 10), end=(5, 0), speed=1, radius=1., max_speed=3,color="orange", label='RobotD')
+    robotE = Robot(start=(6, 10), end=(8, 0), speed=1, radius=1., max_speed=3,color="black", label='RobotE')
+    # robotF = Robot(start=(3, 8), end=(0, 0), speed=1, radius=1.3, max_speed=3, color="gray", label='RobotF')
+    robots = [robotA, robotB, robotC, robotD , robotE]  # , robotF]
 
 
     fig, ax = plt.subplots()
@@ -106,8 +107,8 @@ def main():
 
             # Plot starting points
             ax.plot(
-                robot_a.position[0],
-                robot_a.position[1],
+                robot_a.start[0],
+                robot_a.start[1],
                 "o",
                 color=robot_a.color,
                 markersize=15,
@@ -138,7 +139,7 @@ def main():
         return __plot_list()
 
     def update(frame):
-        print('update robots')
+        # print('update robots')
 
 
         # all_robots_stop = True
@@ -185,7 +186,8 @@ def main():
             _n_vA = vo.desired_velocity_ma(robot_a.position,
                                            robot_a.velocity,
                                            robot_a.end,
-                                           vo_union, max_speed=robot_a.speed)
+                                           vo_union, max_speed=robot_a.max_speed)
+            print(robot_a, _n_vA)
             robot_a.move(_n_vA, dt=dt)
 
         return __plot_list()

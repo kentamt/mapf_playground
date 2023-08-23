@@ -183,8 +183,8 @@ def main():
         trajB.set_data(trajB_x, trajB_y)
 
         # move
-        _n_vA = vo.desired_velocity(_pA, _vA, _pB, _vB, pG=_pGA, max_speed=robotA.speed)
-        _n_vB = vo.desired_velocity(_pB, _vB, _pA, _vA, pG=_pGB, max_speed=robotB.speed)
+        _n_vA = vo.desired_velocity(_pA, _vA, _pB, _vB, pG=_pGA, max_speed=robotA.max_speed)
+        _n_vB = vo.desired_velocity(_pB, _vB, _pA, _vA, pG=_pGB, max_speed=robotB.max_speed)
         robotA.move(_n_vA)
         robotB.move(_n_vB)
 

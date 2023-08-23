@@ -16,9 +16,9 @@ class TestRobot:
         assert np.all(self.robot.position == np.array([1.0, 1.0]))
 
     def test_current_velocity(self):
-        assert np.all(self.robot.current_velocity == [1.0, 0.0])
+        assert np.all(self.robot._velocity == [1.0, 0.0])
         self.robot.move(velocity=[1, 1])
-        assert np.all(self.robot.current_velocity == [1, 1])
+        assert np.all(self.robot._velocity == [1, 1])
 
     def test_remaining_distance(self):
         for _ in range(10):
