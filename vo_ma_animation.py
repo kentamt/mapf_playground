@@ -125,8 +125,8 @@ def main():
     dt = 0.1
     save_gif = False
     fps = 24
-    is_rvo = False
-    margin = 0.2
+    is_rvo = True
+    margin = 0.0
 
     # init plots
     ani_obj = Animation(dt, fps, save_gif)
