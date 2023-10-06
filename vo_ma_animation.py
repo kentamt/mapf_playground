@@ -114,15 +114,15 @@ class Animation:
 
 def main():
     # Define initial and final positions for both robots
-    robotA = Robot(start=(0, 0), end=(0, 10), speed=1, max_speed=2.0, radius=1.0, color="red", label='RobotA')
-    robotB = Robot(start=(2.5, 0), end=(2.5, 10), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
-    robotC = Robot(start=(1.25, 10), end=(1.25, 0), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
+    # robotA = Robot(start=(0, 0), end=(0, 10), speed=1, max_speed=2.0, radius=1.0, color="red", label='RobotA')
+    # robotB = Robot(start=(2.5, 0), end=(2.5, 10), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
+    # robotC = Robot(start=(1.25, 10), end=(1.25, 0), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
 
-    # robotA = Robot(start=(0, 0), end=(10, 10), speed=1, max_speed=2.0, radius=1.0, color="red", label='RobotA')
-    # robotB = Robot(start=(10, 2), end=(2, 5), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
-    # robotC = Robot(start=(0, 4), end=(8, 5), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
-    # robotD = Robot(start=(0, 10), end=(5, 0), speed=1, max_speed=2.0, radius=1.0, color="orange", label='RobotD')
-    # robotE = Robot(start=(6, 10), end=(8, 0), speed=1, max_speed=2.0, radius=1.0, color="black", label='RobotE')
+    robotA = Robot(start=(0, 0), end=(10, 10), speed=1, max_speed=2.0, radius=1.0, color="red", label='RobotA')
+    robotB = Robot(start=(10, 2), end=(2, 5), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
+    robotC = Robot(start=(0, 4), end=(8, 5), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
+    robotD = Robot(start=(0, 10), end=(5, 0), speed=1, max_speed=2.0, radius=1.0, color="orange", label='RobotD')
+    robotE = Robot(start=(6, 10), end=(8, 0), speed=1, max_speed=2.0, radius=1.0, color="black", label='RobotE')
     robots = [robotA, robotB, robotC] # , robotD, robotE]
 
     # setting
@@ -139,7 +139,7 @@ def main():
     ani_obj.init_quivers(robots)
     ani_obj.init_ax()
 
-    # VO
+    # Init VOs
     t_hori = 1
     vos = {}
     triangles = {}
@@ -160,21 +160,35 @@ def main():
             ani_obj.plot_start_point(robot_a)
             ani_obj.plot_end_point(robot_a)
 
+
         return ani_obj.plot_list()
 
     def update(frame):
-        # print('update robots')
+        """ Write Navigation Algorithm here """
+
+        __update_plots()
+
+        vo_unions = __compute_unions()
+
+        # choose desired velocity considering all of vos
+        for robot_a in robots:
+            vo_union = vo_unions[robot_a.label]
+            _n_vA = vo.desired_velocity_ma(robot_a.position,
+                                           robot_a.velocity,
+                                           robot_a.end,
+                                           vo_union, max_speed=robot_a.max_speed)
+            print(robot_a, _n_vA)
+            robot_a.move(_n_vA, dt=dt)
+
+
+        return ani_obj.plot_list()
+
+    def __compute_unions() -> dict:
         vo_unions = {}
         for robot_a in robots:
-            # update plots
-            ani_obj.update_points(robot_a)
-            ani_obj.update_quivers(robot_a)
-            ani_obj.update_trajs(robot_a)
-
             vo_unions[robot_a.label] = []
             _pA = robot_a.position
             _vA = robot_a.velocity
-
             _other_robots = [x for x in robots if x != robot_a]
 
             for robot_b in _other_robots:
@@ -189,19 +203,13 @@ def main():
 
                 # keep vo
                 vo_unions[robot_a.label].append(_tri)
+        return vo_unions
 
-        # choose desired velocity considering all of vos
+    def __update_plots():
         for robot_a in robots:
-            vo_union = vo_unions[robot_a.label]
-            _n_vA = vo.desired_velocity_ma(robot_a.position,
-                                           robot_a.velocity,
-                                           robot_a.end,
-                                           vo_union, max_speed=robot_a.max_speed)
-            print(robot_a, _n_vA)
-            robot_a.move(_n_vA, dt=dt)
-
-
-        return ani_obj.plot_list()
+            ani_obj.update_points(robot_a)
+            ani_obj.update_quivers(robot_a)
+            ani_obj.update_trajs(robot_a)
 
     # Animation
     ani = FuncAnimation(

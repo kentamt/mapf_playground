@@ -105,6 +105,7 @@ class VelocityObstacle:
         return preferred_v
 
     def desired_velocity_ma(self, pA, vA, pG, vo_union, max_speed=1.0, verbose=False):
+        """Choose one velocity"""
 
 
         # compute preferred velocity so that the robot heads to the goal

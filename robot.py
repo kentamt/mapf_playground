@@ -16,7 +16,7 @@ class Robot:
                  label=None):
 
         # spec
-        self._wb = 0.5 * radius
+        # self._wb = 0.5 * radius         # wheel base
         self._max_speed = max_speed
 
         # position
@@ -82,25 +82,61 @@ class Robot:
             #                                    np.sin(self._yaw)])
             self._position += velocity * dt
 
-        # if not self.moving:  # If the robot isn't moving, do nothing
-        #     return
-        #
-        # if velocity is None:
-        #     pass
-        # else:
-        #     # d = np.linalg.norm(self._position - self.end)
-        #     # assert np.linalg.norm(velocity) < d, "speed is too large."
-        #     self._yaw = np.arctan2(velocity[1], velocity[0])
-        #     self._velocity = velocity
-        #
-        # remaining_distance = np.linalg.norm(self.end - self._position)
-        # if remaining_distance <= self.speed * dt:  # Check if we're close to the end point
-        #     self._position = self.end
-        #     self._moving = False
-        #     self._velocity = np.array([0, 0])
-        # else:
-        #     self._position += self._velocity * dt
-    def move2(self, u=None, dt=1):
+
+    @property
+    def position(self):
+        return self._position
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @property
+    def speed(self):
+        return self._speed
+
+    @property
+    def max_speed(self):
+        return self._max_speed
+
+    @property
+    def velocity(self):
+        return self._speed * np.array([np.cos(self._yaw), np.sin(self._yaw)])
+
+        # return self._velocity
+
+    @property
+    def moving(self):
+        return self._moving
+
+
+class Car(Robot):
+    """
+    Nonholonomic car-like robot
+    wheelbase : wb
+
+    """
+    def __init__(self, start, end, speed, radius, wb,
+                 max_speed,
+                 default_v=None, color=None, label=None):
+        super().__init__(start, end, speed, radius, max_speed[0], default_v, color, label)
+
+        # robot parameters
+        # for vis
+        self.length = 4.5  # [m]
+        self.width = 2.0  # [m]
+        self.backtowheel = 1.0  # [m]
+        self.wheel_len = 0.4  # [m]
+        self.wheel_width = 0.2  # [m]
+        self.tread = 0.8  # [m]
+
+        # for control
+        self.wb = wb  # [m]
+        self.max_steer = np.deg2rad(45.0)  # maximum steering angle [rad]
+        self.max_speed_f = max_speed[0]  # [m/s]
+        self.max_speed_b = max_speed[1]  # [m/s]
+
+    def move(self, u=None, dt=1):
         """
          move a robot and update its state
          u[0] : acceleration
@@ -122,37 +158,15 @@ class Robot:
         velocity = self._speed * np.array([np.cos(self._yaw),
                                            np.sin(self._yaw)])
         self._position += velocity * dt
-        self._yaw += self._speed / self._wb * np.tan(u[1]) * dt
+        self._yaw += self._speed / self.wb * np.tan(u[1]) * dt
 
         if u is None:
             pass
         else:
             self._speed += dt * u[0]
-            if self._speed > self._max_speed:
-                self._speed = self._max_speed
-
-    @property
-    def position(self):
-        return self._position
-
-    @property
-    def radius(self):
-        return self._radius
-
-    @property
-    def speed(self):
-        return self._speed
-    @property
-    def max_speed(self):
-        return self._max_speed
+            if self._speed > self.max_speed_f:
+                self._speed = self.max_speed_f
+            if self._speed < self.max_speed_b:
+                self._speed = self.max_speed_b
 
 
-    @property
-    def velocity(self):
-        return self._speed * np.array([np.cos(self._yaw), np.sin(self._yaw)])
-
-        # return self._velocity
-
-    @property
-    def moving(self):
-        return self._moving
