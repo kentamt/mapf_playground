@@ -114,12 +114,16 @@ class Animation:
 
 def main():
     # Define initial and final positions for both robots
-    robotA = Robot(start=(0, 0), end=(10, 10), speed=1, max_speed=2.0, radius=1.0, color="red", label='RobotA')
-    robotB = Robot(start=(10, 2), end=(2, 5), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
-    robotC = Robot(start=(0, 4), end=(8, 5), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
-    robotD = Robot(start=(0, 10), end=(5, 0), speed=1, max_speed=2.0, radius=1.0, color="orange", label='RobotD')
-    robotE = Robot(start=(6, 10), end=(8, 0), speed=1, max_speed=2.0, radius=1.0, color="black", label='RobotE')
-    robots = [robotA, robotB, robotC, robotD, robotE]
+    robotA = Robot(start=(0, 0), end=(0, 10), speed=1, max_speed=2.0, radius=1.0, color="red", label='RobotA')
+    robotB = Robot(start=(2.5, 0), end=(2.5, 10), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
+    robotC = Robot(start=(1.25, 10), end=(1.25, 0), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
+
+    # robotA = Robot(start=(0, 0), end=(10, 10), speed=1, max_speed=2.0, radius=1.0, color="red", label='RobotA')
+    # robotB = Robot(start=(10, 2), end=(2, 5), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
+    # robotC = Robot(start=(0, 4), end=(8, 5), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
+    # robotD = Robot(start=(0, 10), end=(5, 0), speed=1, max_speed=2.0, radius=1.0, color="orange", label='RobotD')
+    # robotE = Robot(start=(6, 10), end=(8, 0), speed=1, max_speed=2.0, radius=1.0, color="black", label='RobotE')
+    robots = [robotA, robotB, robotC] # , robotD, robotE]
 
     # setting
     dt = 0.1
