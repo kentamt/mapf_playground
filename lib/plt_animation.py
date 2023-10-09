@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
-from plot import Vehicle
+from lib.plt_vehicle import Vehicle
 
 
 class Animation:

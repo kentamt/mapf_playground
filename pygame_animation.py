@@ -1,7 +1,7 @@
 import pygame
 import math
 import numpy as np
-from robot import Robot, Car
+from lib.robot import Robot, Car
 from matplotlib import colors as mcolors
 
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)

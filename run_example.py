@@ -1,18 +1,18 @@
 import sys
 import numpy as np
-from robot import Car, Robot
-from vo import VelocityObstacle
+from lib.robot import Car, Robot
+from lib.vo import VelocityObstacle
 from pygame_animation import Screen
 
 
 def acceleration(frame):
-    VELOCITY = 40  # [m/s]
-    return VELOCITY * np.cos(np.radians(5 * frame % 360))
+    velocity = 40  # [m/s]
+    return velocity * np.cos(np.radians(5 * frame % 360))
 
 
 def steering_angle(frame):
-    STEER_ANG_DEG = 10  # [deg]
-    return np.radians(STEER_ANG_DEG) + 0.3 * np.sin(np.radians(3 * frame % 360))
+    steer_ang_deg = 10  # [deg]
+    return np.radians(steer_ang_deg) + 0.3 * np.sin(np.radians(3 * frame % 360))
 
 
 def main_car():
@@ -47,7 +47,7 @@ def main_car():
 
         frame += 1
 
-    pygame.quit()
+    screen.quit()
     sys.exit()
 
 
@@ -62,9 +62,9 @@ def main_robots():
     # Init VOs
     is_rvo = True
     margin = 0.0
-    t_hori = 1
+    t_h = 1
     vos = {}
-    vo = init_vos(is_rvo, robots, t_hori, vos)
+    vo = init_vos(is_rvo, robots, t_h, vos)
 
     trajectories = {}
     for r in robots:
@@ -102,14 +102,15 @@ def main_robots():
     sys.exit()
 
 
-def init_vos(is_rvo, robots, t_hori, vos):
+def init_vos(is_rvo, robots, t_h, vos):
+    vo = None
     for robot_a in robots:
         other_robots = [x for x in robots if x != robot_a]
         for robot_b in other_robots:
             vo = VelocityObstacle(
                 radius_A=robot_a.radius,
                 radius_B=robot_b.radius,
-                time_horizon=t_hori,
+                time_horizon=t_h,
                 rvo=is_rvo,
             )
             vos[(robot_a.label, robot_b.label)] = vo
@@ -140,7 +141,7 @@ def update_vo_union(margin, robots, vos):
 
 
 def init_robots():
-    robotA = Robot(
+    robot_a = Robot(
         start=(10, 10),
         end=(20, 20),
         speed=1,
@@ -149,7 +150,7 @@ def init_robots():
         color="red",
         label="RobotA",
     )
-    robotB = Robot(
+    robot_b = Robot(
         start=(20, 12),
         end=(12, 15),
         speed=1,
@@ -158,7 +159,7 @@ def init_robots():
         color="green",
         label="RobotB",
     )
-    robotC = Robot(
+    robot_c = Robot(
         start=(10, 14),
         end=(18, 15),
         speed=1,
@@ -167,7 +168,7 @@ def init_robots():
         color="blue",
         label="RobotC",
     )
-    robotD = Robot(
+    robot_d = Robot(
         start=(10, 20),
         end=(15, 10),
         speed=1,
@@ -176,7 +177,7 @@ def init_robots():
         color="orange",
         label="RobotD",
     )
-    robotE = Robot(
+    robot_e = Robot(
         start=(16, 20),
         end=(18, 12),
         speed=1,
@@ -185,12 +186,12 @@ def init_robots():
         color="black",
         label="RobotE",
     )
-    robots = [robotA, robotB, robotC, robotD, robotE]
+    robots = [robot_a, robot_b, robot_c, robot_d, robot_e]
     return robots
 
 
 def init_cars():
-    robotA = Car(
+    robot_a = Car(
         start=(10, 10),
         end=(30, 30),
         speed=10,
@@ -200,7 +201,7 @@ def init_cars():
         color="red",
         label="RobotA",
     )
-    robotB = Car(
+    robot_b = Car(
         start=(30, 30),
         end=(10, 10),
         speed=10,
@@ -210,7 +211,7 @@ def init_cars():
         color="green",
         label="RobotB",
     )
-    robotC = Car(
+    robot_c = Car(
         start=(10, 30),
         end=(30, 10),
         speed=10,
@@ -220,7 +221,7 @@ def init_cars():
         color="blue",
         label="RobotC",
     )
-    robots = [robotA, robotB, robotC]
+    robots = [robot_a, robot_b, robot_c]
     return robots
 
 

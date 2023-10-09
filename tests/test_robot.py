@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from ..robot import Robot
+from lib.robot import Robot
 
 
 class TestRobot:

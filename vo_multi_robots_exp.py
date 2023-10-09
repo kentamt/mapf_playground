@@ -1,11 +1,10 @@
-import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 import matplotlib.patches as patches
 
-from robot import Robot
-from vo import VelocityObstacle
+from lib.robot import Robot
+from lib.vo import VelocityObstacle
 
 matplotlib.use("TkAgg")
 

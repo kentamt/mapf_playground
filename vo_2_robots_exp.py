@@ -4,16 +4,16 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 import matplotlib.patches as patches
 
-from vo import VelocityObstacle
-from robot import Robot
+from lib.vo import VelocityObstacle
+from lib.robot import Robot
 
 matplotlib.use("TkAgg")
 
 
 def main():
     # Define initial and final positions for both robots
-    robotA = Robot(start=(0, 0), end=(10, 0), speed=0.30, radius=1.5, color="red")
-    robotB = Robot(start=(10, 0), end=(0, 0), speed=0.3, radius=1.6, color="green")
+    robotA = Robot(start=(0, 0), end=(10, 0), speed=0.30, max_speed=1.0, radius=1.5, color="red")
+    robotB = Robot(start=(10, 0), end=(0, 0), speed=0.3, max_speed=1.0, radius=1.6, color="green")
     # robotA = Robot(start=(0, 10), end=(10, 0), speed=0.30, radius=1.5, color="red")
     # robotB = Robot(start=(0, 0), end=(10, 10), speed=0.30, radius=1.0, color="green")
     # robotA = Robot(start=(0, 5), end=(10, 0), speed=0.20, radius=1.5, color="red")
@@ -21,7 +21,7 @@ def main():
 
     fig, ax = plt.subplots()
     save_gif = False
-    fps = 10
+    fps = 24
 
     # robots
     rA = robotA.radius
@@ -64,7 +64,7 @@ def main():
 
     # VO
     t_hori = 1
-    vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=t_hori, rvo=False)
+    vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=t_hori, rvo=True)
     triangle_coords = np.array([[1, 1], [2, 2.5], [3, 1]])
     triangle = patches.Polygon(triangle_coords, alpha=0.5, closed=True, color="gray")
 
@@ -188,8 +188,8 @@ def main():
         _n_vB = vo.desired_velocity(
             _pB, _vB, _pA, _vA, pG=_pGB, max_speed=robotB.max_speed
         )
-        robotA.move(_n_vA)
-        robotB.move(_n_vB)
+        robotA.move(_n_vA, dt=0.1)
+        robotB.move(_n_vB, dt=0.1)
 
         return pointA, pointB, point_minsum, triangle, quiverA, quiverB, trajA, trajB
 

@@ -1,4 +1,4 @@
-from ..vo import VelocityObstacle
+from lib.vo import VelocityObstacle
 
 
 class TestVelocityObstacle:

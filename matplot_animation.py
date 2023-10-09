@@ -3,8 +3,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 
-from robot import Car
-from animation import Animation
+from lib.robot import Car
+from lib.plt_animation import Animation
 
 matplotlib.use("TkAgg")
 
