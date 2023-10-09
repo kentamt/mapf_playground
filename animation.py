@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import matplotlib.patches as patches
 from plot import Vehicle
 
+
 class Animation:
     def __init__(self, dt, fps, save_gif=False):
         # plots
@@ -28,7 +29,13 @@ class Animation:
         self._points = {}
         for r in robots:
             point = patches.Circle(
-                (r.position[0], r.position[1]), r.radius, fill=True, color=r.color, alpha=0.5, label=r.label)
+                (r.position[0], r.position[1]),
+                r.radius,
+                fill=True,
+                color=r.color,
+                alpha=0.5,
+                label=r.label,
+            )
             self._points[r.label] = point
         for point in self._points.values():
             self._ax.add_patch(point)
@@ -37,7 +44,14 @@ class Animation:
         self._robots = {}
         for r in robots:
             robot = Vehicle(r)
-            robot.plot(r.position[0], r.position[1], r._yaw, steer=r._yaw, cabcolor="-r", truckcolor="-k")
+            robot.plot(
+                r.position[0],
+                r.position[1],
+                r._yaw,
+                steer=r._yaw,
+                cabcolor="-r",
+                truckcolor="-k",
+            )
             self._robots[r.label] = robot
         # for robot in self._robots.values():
         #     for p in robot.patches:
@@ -48,9 +62,9 @@ class Animation:
         for r in robots:
             (trajA,) = self._ax.plot([], [], "-", linewidth=0.8, color=r.color)
             self._trajs[r.label] = {}
-            self._trajs[r.label]['traj'] = trajA
-            self._trajs[r.label]['x'] = []
-            self._trajs[r.label]['y'] = []
+            self._trajs[r.label]["traj"] = trajA
+            self._trajs[r.label]["x"] = []
+            self._trajs[r.label]["y"] = []
 
     def init_ax(self):
         self._ax.legend(
@@ -68,8 +82,14 @@ class Animation:
         self._quivers = {}
         for r in robots:
             quiver = self._ax.quiver(
-                r.position[0], r.position[1], r.velocity[0], r.velocity[1], angles="xy", scale_units="xy", scale=1,
-                color="red"
+                r.position[0],
+                r.position[1],
+                r.velocity[0],
+                r.velocity[1],
+                angles="xy",
+                scale_units="xy",
+                scale=1,
+                color="red",
             )
             self._quivers[r.label] = quiver
 
@@ -80,7 +100,7 @@ class Animation:
         for qui in self._quivers.values():
             ret.append(qui)
         for traj in self._trajs.values():
-            ret.append(traj['traj'])
+            ret.append(traj["traj"])
         return ret
 
     def plot_start_point(self, robot_a):
@@ -107,24 +127,29 @@ class Animation:
         )
 
     def update_trajs(self, robot):
-        self._trajs[robot.label]['x'].append(robot.position[0])
-        self._trajs[robot.label]['y'].append(robot.position[1])
-        self._trajs[robot.label]['traj'].set_data(self._trajs[robot.label]['x'],
-                                                  self._trajs[robot.label]['y'])
+        self._trajs[robot.label]["x"].append(robot.position[0])
+        self._trajs[robot.label]["y"].append(robot.position[1])
+        self._trajs[robot.label]["traj"].set_data(
+            self._trajs[robot.label]["x"], self._trajs[robot.label]["y"]
+        )
 
     def update_quivers(self, robot):
         self._quivers[robot.label].set_offsets(robot.position)
         self._quivers[robot.label].set_UVC(robot.velocity[0], robot.velocity[1])
         if robot.speed < 0:
-            self._quivers[robot.label].set_color('blue')
+            self._quivers[robot.label].set_color("blue")
         else:
-            self._quivers[robot.label].set_color('red')
+            self._quivers[robot.label].set_color("red")
 
     def update_points(self, robot):
         self._points[robot.label].center = (robot.position[0], robot.position[1])
 
     def update_robots(self, robot, steer=0.0):
-        self._robots[robot.label].plot(robot.position[0],
-                                       robot.position[1],
-                                       robot._yaw,
-                                       steer=steer, cabcolor="-r", truckcolor="-k")
+        self._robots[robot.label].plot(
+            robot.position[0],
+            robot.position[1],
+            robot._yaw,
+            steer=steer,
+            cabcolor="-r",
+            truckcolor="-k",
+        )

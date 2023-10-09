@@ -84,7 +84,6 @@ def main():
     ax.set_ylim((-5, 15))
     ax.set_ylim((-5, 5))
 
-
     def init():
         _pA = robotA.position
         _pB = robotB.position
@@ -183,8 +182,12 @@ def main():
         trajB.set_data(trajB_x, trajB_y)
 
         # move
-        _n_vA = vo.desired_velocity(_pA, _vA, _pB, _vB, pG=_pGA, max_speed=robotA.max_speed)
-        _n_vB = vo.desired_velocity(_pB, _vB, _pA, _vA, pG=_pGB, max_speed=robotB.max_speed)
+        _n_vA = vo.desired_velocity(
+            _pA, _vA, _pB, _vB, pG=_pGA, max_speed=robotA.max_speed
+        )
+        _n_vB = vo.desired_velocity(
+            _pB, _vB, _pA, _vA, pG=_pGB, max_speed=robotB.max_speed
+        )
         robotA.move(_n_vA)
         robotB.move(_n_vB)
 
@@ -200,6 +203,7 @@ def main():
         ani.save(gif_name, writer=writergif)
     else:
         plt.show()
+
 
 if __name__ == "__main__":
     main()

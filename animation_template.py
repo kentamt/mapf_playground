@@ -46,7 +46,12 @@ def main():
 
     # Start animation
     ani = FuncAnimation(
-        ani_obj.fig, update, frames=100, init_func=init, blit=False, interval=1000.0 / fps
+        ani_obj.fig,
+        update,
+        frames=100,
+        init_func=init,
+        blit=False,
+        interval=1000.0 / fps,
     )
 
     if save_gif:
@@ -56,12 +61,26 @@ def main():
 
 
 def init_robots():
-    robotA = Car(start=(10, 10), end=(30, 30),
-                 speed=10, radius=3.6, wb=2.3, max_speed=[10, -3],
-                 color="red", label='RobotA')
-    robotB = Car(start=(30, 30), end=(10, 10),
-                 speed=10, radius=3.6, wb=2.3, max_speed=[10, -3],
-                 color="green", label='RobotB')
+    robotA = Car(
+        start=(10, 10),
+        end=(30, 30),
+        speed=10,
+        radius=3.6,
+        wb=2.3,
+        max_speed=[10, -3],
+        color="red",
+        label="RobotA",
+    )
+    robotB = Car(
+        start=(30, 30),
+        end=(10, 10),
+        speed=10,
+        radius=3.6,
+        wb=2.3,
+        max_speed=[10, -3],
+        color="green",
+        label="RobotB",
+    )
     robots = [robotA, robotB]  # , robotC, robotD, robotE]
     return robots
 
@@ -96,7 +115,6 @@ def write_gif(ani, ani_obj, fps):
     gif_name = "anime/vo.gif"
     writer_gif.setup(ani_obj.fig, gif_name, dpi=300)
     ani.save(gif_name, writer=writer_gif)
-
 
 
 if __name__ == "__main__":

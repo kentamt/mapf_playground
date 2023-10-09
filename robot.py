@@ -5,15 +5,17 @@ import random
 
 
 class Robot:
-    def __init__(self,
-                 start,
-                 end,
-                 speed,
-                 radius,
-                 max_speed,
-                 default_v=None,
-                 color=None,
-                 label=None):
+    def __init__(
+        self,
+        start,
+        end,
+        speed,
+        radius,
+        max_speed,
+        default_v=None,
+        color=None,
+        label=None,
+    ):
 
         # spec
         # self._wb = 0.5 * radius         # wheel base
@@ -73,7 +75,9 @@ class Robot:
             self._speed = np.linalg.norm(velocity)
 
         remaining_distance = np.linalg.norm(self.end - self._position)
-        if remaining_distance <= self._speed * dt:  # Check if we're close to the end point
+        if (
+            remaining_distance <= self._speed * dt
+        ):  # Check if we're close to the end point
             self._position = self.end
             self._moving = False
             self._speed = 0.0
@@ -81,7 +85,6 @@ class Robot:
             # velocity = self._speed * np.array([np.cos(self._yaw),
             #                                    np.sin(self._yaw)])
             self._position += velocity * dt
-
 
     @property
     def position(self):
@@ -116,10 +119,22 @@ class Car(Robot):
     wheelbase : wb
 
     """
-    def __init__(self, start, end, speed, radius, wb,
-                 max_speed,
-                 default_v=None, color=None, label=None):
-        super().__init__(start, end, speed, radius, max_speed[0], default_v, color, label)
+
+    def __init__(
+        self,
+        start,
+        end,
+        speed,
+        radius,
+        wb,
+        max_speed,
+        default_v=None,
+        color=None,
+        label=None,
+    ):
+        super().__init__(
+            start, end, speed, radius, max_speed[0], default_v, color, label
+        )
 
         # robot parameters
         # for vis
@@ -157,11 +172,9 @@ class Car(Robot):
             self._speed = 0
 
         # Move the robot according to the input
-        velocity = self._speed * np.array([np.cos(self._yaw),
-                                           np.sin(self._yaw)])
+        velocity = self._speed * np.array([np.cos(self._yaw), np.sin(self._yaw)])
         self._position += velocity * dt
         self._yaw += self._speed / self.wb * np.tan(u[1]) * dt
-
 
         if u is None:
             pass
@@ -174,5 +187,3 @@ class Car(Robot):
 
         # just for vis
         self.steer = u[1]
-
-

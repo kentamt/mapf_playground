@@ -9,6 +9,7 @@ from vo import VelocityObstacle
 
 matplotlib.use("TkAgg")
 
+
 class Animation:
     def __init__(self, dt, fps, save_gif=False):
         # plots
@@ -30,7 +31,13 @@ class Animation:
         self._points = {}
         for r in robots:
             point = patches.Circle(
-                (r.position[0], r.position[1]), r.radius, fill=True, color=r.color, alpha=0.5, label=r.label)
+                (r.position[0], r.position[1]),
+                r.radius,
+                fill=True,
+                color=r.color,
+                alpha=0.5,
+                label=r.label,
+            )
             self._points[r.label] = point
         for point in self._points.values():
             self._ax.add_patch(point)
@@ -40,9 +47,9 @@ class Animation:
         for r in robots:
             (trajA,) = self._ax.plot([], [], "-", linewidth=0.8, color=r.color)
             self._trajs[r.label] = {}
-            self._trajs[r.label]['traj'] = trajA
-            self._trajs[r.label]['x'] = []
-            self._trajs[r.label]['y'] = []
+            self._trajs[r.label]["traj"] = trajA
+            self._trajs[r.label]["x"] = []
+            self._trajs[r.label]["y"] = []
 
     def init_ax(self):
         self._ax.legend(
@@ -60,8 +67,14 @@ class Animation:
         self._quivers = {}
         for r in robots:
             quiver = self._ax.quiver(
-                r.position[0], r.position[1], r.velocity[0], r.velocity[1], angles="xy", scale_units="xy", scale=1,
-                color="red"
+                r.position[0],
+                r.position[1],
+                r.velocity[0],
+                r.velocity[1],
+                angles="xy",
+                scale_units="xy",
+                scale=1,
+                color="red",
             )
             self._quivers[r.label] = quiver
 
@@ -72,7 +85,7 @@ class Animation:
         for qui in self._quivers.values():
             ret.append(qui)
         for traj in self._trajs.values():
-            ret.append(traj['traj'])
+            ret.append(traj["traj"])
         return ret
 
     def plot_start_point(self, robot_a):
@@ -99,10 +112,11 @@ class Animation:
         )
 
     def update_trajs(self, robot):
-        self._trajs[robot.label]['x'].append(robot.position[0])
-        self._trajs[robot.label]['y'].append(robot.position[1])
-        self._trajs[robot.label]['traj'].set_data(self._trajs[robot.label]['x'],
-                                                  self._trajs[robot.label]['y'])
+        self._trajs[robot.label]["x"].append(robot.position[0])
+        self._trajs[robot.label]["y"].append(robot.position[1])
+        self._trajs[robot.label]["traj"].set_data(
+            self._trajs[robot.label]["x"], self._trajs[robot.label]["y"]
+        )
 
     def update_quivers(self, robot):
         self._quivers[robot.label].set_offsets(robot.position)
@@ -118,12 +132,52 @@ def main():
     # robotB = Robot(start=(2.5, 0), end=(2.5, 10), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
     # robotC = Robot(start=(1.25, 10), end=(1.25, 0), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
 
-    robotA = Robot(start=(0, 0), end=(10, 10), speed=1, max_speed=2.0, radius=1.0, color="red", label='RobotA')
-    robotB = Robot(start=(10, 2), end=(2, 5), speed=1, max_speed=2.0, radius=1.0, color="green", label='RobotB')
-    robotC = Robot(start=(0, 4), end=(8, 5), speed=1, max_speed=2.0, radius=1.0, color="blue", label='RobotC')
-    robotD = Robot(start=(0, 10), end=(5, 0), speed=1, max_speed=2.0, radius=1.0, color="orange", label='RobotD')
-    robotE = Robot(start=(6, 10), end=(8, 0), speed=1, max_speed=2.0, radius=1.0, color="black", label='RobotE')
-    robots = [robotA, robotB, robotC] # , robotD, robotE]
+    robotA = Robot(
+        start=(0, 0),
+        end=(10, 10),
+        speed=1,
+        max_speed=2.0,
+        radius=1.0,
+        color="red",
+        label="RobotA",
+    )
+    robotB = Robot(
+        start=(10, 2),
+        end=(2, 5),
+        speed=1,
+        max_speed=2.0,
+        radius=1.0,
+        color="green",
+        label="RobotB",
+    )
+    robotC = Robot(
+        start=(0, 4),
+        end=(8, 5),
+        speed=1,
+        max_speed=2.0,
+        radius=1.0,
+        color="blue",
+        label="RobotC",
+    )
+    robotD = Robot(
+        start=(0, 10),
+        end=(5, 0),
+        speed=1,
+        max_speed=2.0,
+        radius=1.0,
+        color="orange",
+        label="RobotD",
+    )
+    robotE = Robot(
+        start=(6, 10),
+        end=(8, 0),
+        speed=1,
+        max_speed=2.0,
+        radius=1.0,
+        color="black",
+        label="RobotE",
+    )
+    robots = [robotA, robotB, robotC]  # , robotD, robotE]
 
     # setting
     dt = 0.1
@@ -146,20 +200,21 @@ def main():
     for robot_a in robots:
         other_robots = [x for x in robots if x != robot_a]
         for robot_b in other_robots:
-            vo = VelocityObstacle(radius_A=robot_a.radius,
-                                  radius_B=robot_b.radius,
-                                  time_horizon=t_hori, rvo=is_rvo)
+            vo = VelocityObstacle(
+                radius_A=robot_a.radius,
+                radius_B=robot_b.radius,
+                time_horizon=t_hori,
+                rvo=is_rvo,
+            )
             vos[(robot_a.label, robot_b.label)] = vo
 
-
     def init():
-        print('start init')
+        print("start init")
         for robot_a in robots:
             ani_obj.update_points(robot_a)
             ani_obj.update_quivers(robot_a)
             ani_obj.plot_start_point(robot_a)
             ani_obj.plot_end_point(robot_a)
-
 
         return ani_obj.plot_list()
 
@@ -173,13 +228,15 @@ def main():
         # choose desired velocity considering all of vos
         for robot_a in robots:
             vo_union = vo_unions[robot_a.label]
-            _n_vA = vo.desired_velocity_ma(robot_a.position,
-                                           robot_a.velocity,
-                                           robot_a.end,
-                                           vo_union, max_speed=robot_a.max_speed)
+            _n_vA = vo.desired_velocity_ma(
+                robot_a.position,
+                robot_a.velocity,
+                robot_a.end,
+                vo_union,
+                max_speed=robot_a.max_speed,
+            )
             print(robot_a, _n_vA)
             robot_a.move(_n_vA, dt=dt)
-
 
         return ani_obj.plot_list()
 
@@ -213,7 +270,12 @@ def main():
 
     # Animation
     ani = FuncAnimation(
-        ani_obj.fig, update, frames=100, init_func=init, blit=False, interval=1000.0 / fps
+        ani_obj.fig,
+        update,
+        frames=100,
+        init_func=init,
+        blit=False,
+        interval=1000.0 / fps,
     )
 
     if save_gif:
@@ -223,7 +285,6 @@ def main():
         ani.save(gif_name, writer=writergif)
     else:
         plt.show()
-
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ class VelocityObstacle:
 
         # Check if the intersection point lies on segment PQ
         if ((x - P[0]) / (Q[0] - P[0]) >= 0 and (x - P[0]) / (Q[0] - P[0]) <= 1) and (
-                (y - P[1]) / (Q[1] - P[1]) >= 0 and (y - P[1]) / (Q[1] - P[1]) <= 1
+            (y - P[1]) / (Q[1] - P[1]) >= 0 and (y - P[1]) / (Q[1] - P[1]) <= 1
         ):
             # Check if the intersection point is in the direction of the ray
             if (x - A[0]) / (B[0] - A[0]) >= 0 and (y - A[1]) / (B[1] - A[1]) >= 0:
@@ -95,18 +95,17 @@ class VelocityObstacle:
 
             if not is_inside:
                 if verbose:
-                    print(f'tri: {tri}')
-                    print(f'outside: {P}, {Q}')
+                    print(f"tri: {tri}")
+                    print(f"outside: {P}, {Q}")
                 return _vA
 
         if verbose:
-            print('no candidate')
+            print("no candidate")
 
         return preferred_v
 
     def desired_velocity_ma(self, pA, vA, pG, vo_union, max_speed=1.0, verbose=False):
         """Choose one velocity"""
-
 
         # compute preferred velocity so that the robot heads to the goal
         preferred_v = (pG - pA) / np.linalg.norm(pG - pA) * max_speed
@@ -131,12 +130,12 @@ class VelocityObstacle:
 
             if is_outside:
                 if verbose:
-                    print(f'tri: {tri}')
-                    print(f'outside: {P}, {Q}')
+                    print(f"tri: {tri}")
+                    print(f"outside: {P}, {Q}")
                 return _vA
 
         if verbose:
-            print('no candidate')
+            print("no candidate")
 
         return preferred_v
 
@@ -294,15 +293,15 @@ class VelocityObstacle:
         # Draw the VO cone using tangent lines from robotA + vB
         tri = self.compute_vo_triangle(0.0, pA, vA, pB, vB)
         triangle = patches.Polygon(
-            tri,
-            alpha=0.5,
-            closed=True,
-            color="gray",
-            label="VO cone",
+            tri, alpha=0.5, closed=True, color="gray", label="VO cone"
         )  #
         ax.add_patch(triangle)
 
-        ax.plot([pA[0], pA[0] + vB[0], pA[0] + vA[0], pA[0]], [pA[1], pA[1] + vB[1], pA[1] + vA[1], pA[1]], '-')
+        ax.plot(
+            [pA[0], pA[0] + vB[0], pA[0] + vA[0], pA[0]],
+            [pA[1], pA[1] + vB[1], pA[1] + vA[1], pA[1]],
+            "-",
+        )
 
         ax.set_aspect("equal")
         ax.set_xlim([-2, 8])
@@ -318,6 +317,7 @@ class VelocityObstacle:
 def main():
     import warnings
     from robot import Robot
+
     warnings.filterwarnings("ignore", category=matplotlib.MatplotlibDeprecationWarning)
 
     # robots
