@@ -124,10 +124,10 @@ class Car(Robot):
         # robot parameters
         # for vis
         self.length = 4.5  # [m]
-        self.width = 2.0  # [m]
-        self.backtowheel = 1.0  # [m]
-        self.wheel_len = 0.4  # [m]
-        self.wheel_width = 0.2  # [m]
+        self.width = 2.5  # [m]
+        self.backtowheel = 0.6  # [m]
+        self.wheel_len = 0.9  # [m]
+        self.wheel_width = 0.4  # [m]
         self.tread = 0.8  # [m]
 
         # for control
@@ -135,6 +135,8 @@ class Car(Robot):
         self.max_steer = np.deg2rad(45.0)  # maximum steering angle [rad]
         self.max_speed_f = max_speed[0]  # [m/s]
         self.max_speed_b = max_speed[1]  # [m/s]
+
+        self.steer = 0
 
     def move(self, u=None, dt=1):
         """
@@ -160,6 +162,7 @@ class Car(Robot):
         self._position += velocity * dt
         self._yaw += self._speed / self.wb * np.tan(u[1]) * dt
 
+
         if u is None:
             pass
         else:
@@ -168,5 +171,8 @@ class Car(Robot):
                 self._speed = self.max_speed_f
             if self._speed < self.max_speed_b:
                 self._speed = self.max_speed_b
+
+        # just for vis
+        self.steer = u[1]
 
 
