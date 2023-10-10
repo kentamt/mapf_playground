@@ -226,5 +226,5 @@ def init_cars():
 
 
 if __name__ == "__main__":
-    main_car()
-    # main_robots()
+    # main_car()
+    main_robots()
