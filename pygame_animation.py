@@ -58,8 +58,8 @@ class Screen:
             rr = self.meter_to_pixel(r.radius)
             sx = self.meter_to_pixel(r.start[0])
             sy = self.meter_to_pixel(r.start[1])
-            gx = self.meter_to_pixel(r.end[0])
-            gy = self.meter_to_pixel(r.end[1])
+            gx = self.meter_to_pixel(r.goal[0])
+            gy = self.meter_to_pixel(r.goal[1])
 
             pygame.draw.circle(self.win, self.color[r.color], (sx, sy), rr, width=1)
             pygame.draw.circle(self.win, self.color[r.color], (gx, gy), rr, width=1)

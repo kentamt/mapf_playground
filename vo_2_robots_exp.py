@@ -12,12 +12,12 @@ matplotlib.use("TkAgg")
 
 def main():
     # Define initial and final positions for both robots
-    robotA = Robot(start=(0, 0), end=(10, 0), speed=0.30, max_speed=1.0, radius=1.5, color="red")
-    robotB = Robot(start=(10, 0), end=(0, 0), speed=0.3, max_speed=1.0, radius=1.6, color="green")
-    # robotA = Robot(start=(0, 10), end=(10, 0), speed=0.30, radius=1.5, color="red")
-    # robotB = Robot(start=(0, 0), end=(10, 10), speed=0.30, radius=1.0, color="green")
-    # robotA = Robot(start=(0, 5), end=(10, 0), speed=0.20, radius=1.5, color="red")
-    # robotB = Robot(start=(0, 0), end=(10, 4), speed=0.20, radius=1.0, color="green")
+    robotA = Robot(start=(0, 0), goal=(10, 0), speed=0.30, max_speed=1.0, radius=1.5, color="red")
+    robotB = Robot(start=(10, 0), goal=(0, 0), speed=0.3, max_speed=1.0, radius=1.6, color="green")
+    # robotA = Robot(start=(0, 10), goal=(10, 0), speed=0.30, radius=1.5, color="red")
+    # robotB = Robot(start=(0, 0),  goal=(10, 10), speed=0.30, radius=1.0, color="green")
+    # robotA = Robot(start=(0, 5),  goal=(10, 0), speed=0.20, radius=1.5, color="red")
+    # robotB = Robot(start=(0, 0),  goal=(10, 4), speed=0.20, radius=1.0, color="green")
 
     fig, ax = plt.subplots()
     save_gif = False
@@ -117,8 +117,8 @@ def main():
 
         # Plot ending points
         ax.plot(
-            robotA.end[0],
-            robotA.end[1],
+            robotA.goal[0],
+            robotA.goal[1],
             "o",
             color=robotA.color,
             markersize=15,
@@ -126,8 +126,8 @@ def main():
             label="End A",
         )
         ax.plot(
-            robotB.end[0],
-            robotB.end[1],
+            robotB.goal[0],
+            robotB.goal[1],
             "o",
             color=robotB.color,
             markersize=15,
@@ -154,8 +154,8 @@ def main():
 
         _pA = robotA.position
         _pB = robotB.position
-        _pGA = robotA.end
-        _pGB = robotB.end
+        _pGA = robotA.goal
+        _pGB = robotB.goal
         _vA = robotA.velocity
         _vB = robotB.velocity
 

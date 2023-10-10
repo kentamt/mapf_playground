@@ -101,8 +101,8 @@ class Animation:
 
     def plot_end_point(self, robot_a):
         self._ax.plot(
-            robot_a.end[0],
-            robot_a.end[1],
+            robot_a.goal[0],
+            robot_a.goal[1],
             "o",
             color=robot_a.color,
             markersize=15,
@@ -133,7 +133,7 @@ def main():
 
     robotA = Robot(
         start=(0, 0),
-        end=(10, 10),
+        goal=(10, 10),
         speed=1,
         max_speed=2.0,
         radius=1.0,
@@ -142,7 +142,7 @@ def main():
     )
     robotB = Robot(
         start=(10, 2),
-        end=(2, 5),
+        goal=(2, 5),
         speed=1,
         max_speed=2.0,
         radius=1.0,
@@ -151,7 +151,7 @@ def main():
     )
     robotC = Robot(
         start=(0, 4),
-        end=(8, 5),
+        goal=(8, 5),
         speed=1,
         max_speed=2.0,
         radius=1.0,
@@ -160,7 +160,7 @@ def main():
     )
     robotD = Robot(
         start=(0, 10),
-        end=(5, 0),
+        goal=(5, 0),
         speed=1,
         max_speed=2.0,
         radius=1.0,
@@ -169,7 +169,7 @@ def main():
     )
     robotE = Robot(
         start=(6, 10),
-        end=(8, 0),
+        goal=(8, 0),
         speed=1,
         max_speed=2.0,
         radius=1.0,
@@ -230,7 +230,7 @@ def main():
             _n_vA = vo.desired_velocity_ma(
                 robot_a.position,
                 robot_a.velocity,
-                robot_a.end,
+                robot_a.goal,
                 vo_union,
                 max_speed=robot_a.max_speed,
             )

@@ -84,7 +84,7 @@ def main_robots():
             v = vo.desired_velocity_ma(
                 robot_a.position,
                 robot_a.velocity,
-                robot_a.end,
+                robot_a.goal,
                 vo_union,
                 max_speed=robot_a.max_speed,
             )
@@ -143,7 +143,7 @@ def update_vo_union(margin, robots, vos):
 def init_robots():
     robot_a = Robot(
         start=(10, 10),
-        end=(20, 20),
+        goal=(20, 20),
         speed=1,
         max_speed=5.0,
         radius=1.0,
@@ -152,7 +152,7 @@ def init_robots():
     )
     robot_b = Robot(
         start=(20, 12),
-        end=(12, 15),
+        goal=(12, 15),
         speed=1,
         max_speed=5.0,
         radius=1.0,
@@ -161,7 +161,7 @@ def init_robots():
     )
     robot_c = Robot(
         start=(10, 14),
-        end=(18, 15),
+        goal=(18, 15),
         speed=1,
         max_speed=5.0,
         radius=1.0,
@@ -170,7 +170,7 @@ def init_robots():
     )
     robot_d = Robot(
         start=(10, 20),
-        end=(15, 10),
+        goal=(15, 10),
         speed=1,
         max_speed=5.0,
         radius=1.0,
@@ -179,7 +179,7 @@ def init_robots():
     )
     robot_e = Robot(
         start=(16, 20),
-        end=(18, 12),
+        goal=(18, 12),
         speed=1,
         max_speed=5.0,
         radius=1.0,
@@ -192,7 +192,7 @@ def init_robots():
 
 def init_cars():
     robot_a = Car(
-        start=(10, 10),
+        start=(10, 10, np.radians(45)),
         end=(30, 30),
         speed=10,
         radius=3.6,
@@ -202,7 +202,7 @@ def init_cars():
         label="RobotA",
     )
     robot_b = Car(
-        start=(30, 30),
+        start=(30, 30, np.radians(0)),
         end=(10, 10),
         speed=10,
         radius=3.6,
@@ -212,7 +212,7 @@ def init_cars():
         label="RobotB",
     )
     robot_c = Car(
-        start=(10, 30),
+        start=(10, 30, np.radians(90)),
         end=(30, 10),
         speed=10,
         radius=3.6,

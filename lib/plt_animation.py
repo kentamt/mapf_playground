@@ -117,8 +117,8 @@ class Animation:
 
     def plot_end_point(self, robot_a):
         self._ax.plot(
-            robot_a.end[0],
-            robot_a.end[1],
+            robot_a.goal[0],
+            robot_a.goal[1],
             "o",
             color=robot_a.color,
             markersize=15,

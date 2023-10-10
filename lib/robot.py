@@ -4,11 +4,18 @@ import matplotlib.colors as mcolors
 import random
 
 
+class State:
+    def __init__(self, x, y, yaw):
+        self.x = x
+        self.y = y
+        self.yaw = yaw
+
+
 class Robot:
     def __init__(
         self,
         start,
-        end,
+        goal,
         speed,
         radius,
         max_speed,
@@ -23,12 +30,13 @@ class Robot:
 
         # position
         self.start = np.array(start, dtype=np.float64)
-        self.end = np.array(end, dtype=np.float64)
+        self.goal = np.array(goal, dtype=np.float64)
+
         self._position = np.array(start, dtype=np.float64)
 
         # kinematics
         if default_v is None:
-            vec = self.end - self._position
+            vec = self.goal - self._position
             default_v = (vec / np.linalg.norm(vec)) * speed
 
         self._speed = np.linalg.norm(default_v)
@@ -50,7 +58,7 @@ class Robot:
             self.label = label
 
         # check
-        d = np.linalg.norm(self.start - self.end)
+        d = np.linalg.norm(self.start - self.goal)
         assert speed < d, "speed is too large."
 
     def __str__(self):
@@ -74,11 +82,11 @@ class Robot:
             self._yaw = np.arctan2(velocity[1], velocity[0])
             self._speed = np.linalg.norm(velocity)
 
-        remaining_distance = np.linalg.norm(self.end - self._position)
+        remaining_distance = np.linalg.norm(self.goal - self._position)
         if (
             remaining_distance <= self._speed * dt
         ):  # Check if we're close to the end point
-            self._position = self.end
+            self._position = self.goal
             self._moving = False
             self._speed = 0.0
         else:
@@ -89,6 +97,11 @@ class Robot:
     @property
     def position(self):
         return self._position
+
+    @property
+    def yaw(self):
+        return self._yaw
+
 
     @property
     def radius(self):
@@ -133,7 +146,7 @@ class Car(Robot):
         label=None,
     ):
         super().__init__(
-            start, end, speed, radius, max_speed[0], default_v, color, label
+            start[:2], end[:2], speed, radius, max_speed[0], default_v, color, label
         )
 
         # robot parameters
@@ -151,7 +164,11 @@ class Car(Robot):
         self.max_speed_f = max_speed[0]  # [m/s]
         self.max_speed_b = max_speed[1]  # [m/s]
 
+        self._yaw = start[2]
         self.steer = 0
+
+        self.start = start
+        self.goal = end
 
     def move(self, u=None, dt=1):
         """
@@ -165,9 +182,9 @@ class Car(Robot):
             return
 
         # Check if we're close to the end point
-        remaining_distance = np.linalg.norm(self.end - self._position)
+        remaining_distance = np.linalg.norm(self.goal - self._position)
         if remaining_distance <= self._speed * dt:
-            self._position = self.end
+            self._position = self.goal
             self._moving = False
             self._speed = 0
 

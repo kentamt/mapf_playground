@@ -332,10 +332,10 @@ def main():
     vo = VelocityObstacle(radius_A=rA, radius_B=rB, time_horizon=1, rvo=True)
     vo.draw(pA, vA, pB, vB)
 
-    new_vA = vo.desired_velocity(pA, vA, pB, vB, pG=robotA.end, verbose=True)
+    new_vA = vo.desired_velocity(pA, vA, pB, vB, pG=robotA.goal, verbose=True)
     vo.draw(pA, vA, pB, vB, new_vA=new_vA)
 
-    new_vB = vo.desired_velocity(pB, vB, pA, vA, pG=robotB.end, verbose=True)
+    new_vB = vo.desired_velocity(pB, vB, pA, vA, pG=robotB.goal, verbose=True)
     vo.draw(pB, vB, pA, vA, new_vA=new_vB)
 
 
