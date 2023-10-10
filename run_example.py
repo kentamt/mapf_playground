@@ -1,19 +1,18 @@
 import sys
 import numpy as np
-from lib.robot import Car, Robot
+from lib.robot_mod import Car, Robot
 from lib.vo import VelocityObstacle
 from pygame_animation import Screen
 
 
 def acceleration(frame):
     velocity = 40  # [m/s]
-    return velocity * np.cos(np.radians(5 * frame % 360))
+    return velocity # * np.cos(np.radians(5 * frame % 360))
 
 
 def steering_angle(frame):
     steer_ang_deg = 10  # [deg]
     return np.radians(steer_ang_deg) + 0.3 * np.sin(np.radians(3 * frame % 360))
-
 
 def main_car():
     screen = Screen()
@@ -44,6 +43,7 @@ def main_car():
 
         # draw
         screen.update_cars(robots, trajectories)
+
 
         frame += 1
 
@@ -192,33 +192,33 @@ def init_robots():
 
 def init_cars():
     robot_a = Car(
-        start=(10, 10, np.radians(45)),
-        end=(30, 30),
+        start=(60, 60, np.radians(45)),
+        end=(70, 80, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
         max_speed=[10, -3],
-        color="red",
+        color="salmon",
         label="RobotA",
     )
     robot_b = Car(
-        start=(30, 30, np.radians(0)),
-        end=(10, 10),
+        start=(80, 80, np.radians(0)),
+        end=(70, 70, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
         max_speed=[10, -3],
-        color="green",
+        color="teal",
         label="RobotB",
     )
     robot_c = Car(
-        start=(10, 30, np.radians(90)),
-        end=(30, 10),
+        start=(60, 80, np.radians(90)),
+        end=(80, 60, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
         max_speed=[10, -3],
-        color="blue",
+        color="royalblue",
         label="RobotC",
     )
     robots = [robot_a, robot_b, robot_c]
@@ -226,5 +226,5 @@ def init_cars():
 
 
 if __name__ == "__main__":
-    # main_car()
-    main_robots()
+    main_car()
+    # main_robots()

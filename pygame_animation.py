@@ -1,7 +1,7 @@
 import pygame
 import math
 import numpy as np
-from lib.robot import Robot, Car
+from lib.robot_mod import Robot, Car
 from matplotlib import colors as mcolors
 
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
@@ -39,7 +39,7 @@ class Screen:
         # Colors
         self.color = color_dict
 
-        self.scale = 10
+        self.scale = 5
 
     def quit(self):
         pygame.quit()
@@ -52,7 +52,7 @@ class Screen:
         return run
 
     def update_robots(self, robots, trajectories=None):
-        self.win.fill(self.color["gray"])
+        self.win.fill(self.color["darkblue"])
 
         for r in robots:
             rr = self.meter_to_pixel(r.radius)
@@ -80,10 +80,12 @@ class Screen:
         pygame.display.flip()
 
     def update_cars(self, robots, trajectories=None):
-        self.win.fill(self.color["gray"])
+        self.win.fill(self.color["black"])
 
         for r in robots:
             self.draw_car(r)
+            self.draw_start(r)
+            self.draw_goal(r)
 
         for traj in trajectories.values():
             for i, (x1, y1) in enumerate(traj):
@@ -109,6 +111,7 @@ class Screen:
         pygame.draw.circle(self.win, self.color[r.color], (x, y), radius, width=0)
 
     def draw_car(self, r: Car):
+        # spec
         CAR_LENGTH = self.meter_to_pixel(r.length)
         CAR_WIDTH = self.meter_to_pixel(r.width)
         WHEEL_LEN = self.meter_to_pixel(r.wheel_len)
@@ -117,14 +120,15 @@ class Screen:
         TREAD = self.meter_to_pixel(r.tread)
         WB = self.meter_to_pixel(r.wb)
 
+        # body
         x = self.meter_to_pixel(r.position[0])
         y = self.meter_to_pixel(r.position[1])
-        yaw = -np.degrees(r._yaw)
+        yaw = -np.degrees(r.yaw)
         car_rect = pygame.Rect(0, 0, CAR_LENGTH, CAR_WIDTH)
         car_image = pygame.Surface((CAR_LENGTH, CAR_WIDTH), pygame.SRCALPHA)
         pygame.draw.rect(car_image, self.color[r.color], car_rect, width=2)
 
-        # REAR
+        # Rear wheels
         rr_wheel = pygame.Rect(BACKTOWHEEL, WHEEL_WIDTH / 2.0, WHEEL_LEN, WHEEL_WIDTH)
         rl_wheel = pygame.Rect(
             BACKTOWHEEL,
@@ -132,10 +136,10 @@ class Screen:
             WHEEL_LEN,
             WHEEL_WIDTH,
         )
-        pygame.draw.rect(car_image, self.color["black"], rr_wheel, width=1)
-        pygame.draw.rect(car_image, self.color["black"], rl_wheel, width=1)
+        pygame.draw.rect(car_image, self.color[r.color], rr_wheel, width=1)
+        pygame.draw.rect(car_image, self.color[r.color], rl_wheel, width=1)
 
-        # FRONT
+        # Front wheels
         fr_wheel_rect = pygame.Rect(
             BACKTOWHEEL + WB, WHEEL_WIDTH / 2.0, WHEEL_LEN, WHEEL_WIDTH
         )
@@ -149,10 +153,10 @@ class Screen:
         fr_wheel_image = pygame.Surface((WHEEL_LEN, WHEEL_WIDTH), pygame.SRCALPHA)
         fl_wheel_image = pygame.Surface((WHEEL_LEN, WHEEL_WIDTH), pygame.SRCALPHA)
         pygame.draw.rect(
-            fr_wheel_image, self.color["black"], (0, 0, WHEEL_LEN, WHEEL_WIDTH), width=1
+            fr_wheel_image, self.color[r.color], (0, 0, WHEEL_LEN, WHEEL_WIDTH), width=1
         )
         pygame.draw.rect(
-            fl_wheel_image, self.color["black"], (0, 0, WHEEL_LEN, WHEEL_WIDTH), width=1
+            fl_wheel_image, self.color[r.color], (0, 0, WHEEL_LEN, WHEEL_WIDTH), width=1
         )
         rotated_fr_wheel = pygame.transform.rotate(
             fr_wheel_image, -math.degrees(r.steer)
@@ -162,6 +166,42 @@ class Screen:
         )
         car_image.blit(rotated_fr_wheel, fr_wheel_rect.topleft)
         car_image.blit(rotated_fl_wheel, fl_wheel_rect.topleft)
+        rotated_image = pygame.transform.rotate(car_image, yaw)
+        rect = rotated_image.get_rect(center=(x, y))
+
+        self.win.blit(rotated_image, rect.topleft)
+
+    def draw_start(self, r: Car):
+        # spec
+        CAR_LENGTH = self.meter_to_pixel(r.length)
+        CAR_WIDTH = self.meter_to_pixel(r.width)
+
+        # body
+        x = self.meter_to_pixel(r.start[0])
+        y = self.meter_to_pixel(r.start[1])
+        yaw = -np.degrees(r._start.yaw)
+        car_rect = pygame.Rect(0, 0, CAR_LENGTH, CAR_WIDTH)
+        car_image = pygame.Surface((CAR_LENGTH, CAR_WIDTH), pygame.SRCALPHA)
+        pygame.draw.rect(car_image, self.color[r.color], car_rect, width=1)
+
+        rotated_image = pygame.transform.rotate(car_image, yaw)
+        rect = rotated_image.get_rect(center=(x, y))
+
+        self.win.blit(rotated_image, rect.topleft)
+
+    def draw_goal(self, r: Car):
+        # spec
+        CAR_LENGTH = self.meter_to_pixel(r.length)
+        CAR_WIDTH = self.meter_to_pixel(r.width)
+
+        # body
+        x = self.meter_to_pixel(r.goal[0])
+        y = self.meter_to_pixel(r.goal[1])
+        yaw = -np.degrees(r._goal.yaw)
+        car_rect = pygame.Rect(0, 0, CAR_LENGTH, CAR_WIDTH)
+        car_image = pygame.Surface((CAR_LENGTH, CAR_WIDTH), pygame.SRCALPHA)
+        pygame.draw.rect(car_image, self.color[r.color], car_rect, width=1)
+
         rotated_image = pygame.transform.rotate(car_image, yaw)
         rect = rotated_image.get_rect(center=(x, y))
 

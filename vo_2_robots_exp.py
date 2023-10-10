@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 import matplotlib.patches as patches
 
 from lib.vo import VelocityObstacle
-from lib.robot import Robot
+from lib.robot_mod import Robot
 
 matplotlib.use("TkAgg")
 
