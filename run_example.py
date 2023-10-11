@@ -19,10 +19,6 @@ def main_car():
     screen = Screen()
     robots = init_cars()
 
-    r = robots[1]
-    path = DubinsPathPlanner()
-    path.generate(r, 1./3.0)
-
     run = True
     frame = 0
     dt = 0.01
@@ -38,10 +34,12 @@ def main_car():
 
         # create inputs
         for robot_a in robots:
+            # update
             u = [acceleration(frame), steering_angle(frame)]
+            # u = [0, steering_angle(frame)]
             robot_a.move(u, dt=dt)
 
-            # update trajectories
+            # keep trajectory
             trajectories[robot_a.label].append(
                 (robot_a.position[0], robot_a.position[1])
             )
@@ -197,8 +195,8 @@ def init_robots():
 
 def init_cars():
     robot_a = Car(
-        start=(60, 60, np.radians(45)),
-        end=(70, 80, np.radians(45)),
+        start=(35, 30, np.radians(45)),
+        end=(40, 40, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
@@ -207,8 +205,8 @@ def init_cars():
         label="RobotA",
     )
     robot_b = Car(
-        start=(80, 80, np.radians(0)),
-        end=(70, 70, np.radians(45)),
+        start=(40, 40, np.radians(0)),
+        end=(30, 30, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
@@ -226,7 +224,7 @@ def init_cars():
         color="royalblue",
         label="RobotC",
     )
-    robots = [robot_a, robot_b, robot_c]
+    robots = [robot_a]# , robot_b, robot_c]
 
     # set path from start to goal
     curvature = 1.0/3.0

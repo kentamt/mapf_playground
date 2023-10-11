@@ -16,11 +16,11 @@ class DubinsPathPlanner(PathPlanner):
         super(DubinsPathPlanner, self).__init__()
 
     def generate(self, car_robot, curvature):
-        sx = car_robot._start.x
-        sy = car_robot._start.y
+        sx = car_robot._start.rear_x
+        sy = car_robot._start.rear_y
         syaw = car_robot._start.yaw
-        ex = car_robot._goal.x
-        ey = car_robot._goal.y
+        ex = car_robot._goal.rear_x
+        ey = car_robot._goal.rear_y
         eyaw = car_robot._goal.yaw
         path_x, path_y, path_yaw, mode, lengths = plan_dubins_path(sx,
                                                                    sy,

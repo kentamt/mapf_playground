@@ -10,12 +10,13 @@ matplotlib.use("TkAgg")
 
 
 def acceleration(frame):
-    return 40.0 * np.cos(np.radians(5 * frame % 360))
+    velocity = 40  # [m/s]
+    return velocity # * np.cos(np.radians(5 * frame % 360))
 
 
 def steering_angle(frame):
-    return np.radians(10.0) + 0.2 * np.sin(np.radians(10 * frame % 360))
-
+    steer_ang_deg = 10  # [deg]
+    return np.radians(steer_ang_deg) + 0.3 * np.sin(np.radians(3 * frame % 360))
 
 def main():
     # Define initial and final positions for both robots
@@ -37,7 +38,8 @@ def main():
     def update(frame):
         """"move robots and update plots"""
         for robot_a in robots:
-            u = [acceleration(frame), steering_angle(frame)]
+            # u = [acceleration(frame), steering_angle(frame)]
+            u = [0, steering_angle(frame)]
             robot_a.move(u, dt=dt)
 
             update_animation_obj(ani_obj, robot_a, u)
@@ -62,8 +64,8 @@ def main():
 
 def init_robots():
     robot_a = Car(
-        start=(60, 60, np.radians(45)),
-        end=(70, 80, np.radians(45)),
+        start=(35, 30, np.radians(45)),
+        end=(40, 40, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
@@ -72,8 +74,8 @@ def init_robots():
         label="RobotA",
     )
     robot_b = Car(
-        start=(80, 80, np.radians(0)),
-        end=(70, 70, np.radians(45)),
+        start=(40, 40, np.radians(0)),
+        end=(30, 30, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
@@ -91,7 +93,46 @@ def init_robots():
         color="royalblue",
         label="RobotC",
     )
-    robots = [robot_a, robot_b, robot_c]
+    robots = [robot_a]# , robot_b, robot_c]
+
+    from lib.path_planner import DubinsPathPlanner
+    curvature = 1.0/3.0
+    for r in robots:
+        path = DubinsPathPlanner()
+        path.generate(r, curvature)
+
+    #
+    # robot_a = Car(
+    #     start=(60, 60, np.radians(45)),
+    #     end=(70, 80, np.radians(45)),
+    #     speed=10,
+    #     radius=3.6,
+    #     wb=2.3,
+    #     max_speed=[10, -3],
+    #     color="salmon",
+    #     label="RobotA",
+    # )
+    # robot_b = Car(
+    #     start=(80, 80, np.radians(0)),
+    #     end=(70, 70, np.radians(45)),
+    #     speed=10,
+    #     radius=3.6,
+    #     wb=2.3,
+    #     max_speed=[10, -3],
+    #     color="teal",
+    #     label="RobotB",
+    # )
+    # robot_c = Car(
+    #     start=(60, 80, np.radians(90)),
+    #     end=(80, 60, np.radians(45)),
+    #     speed=10,
+    #     radius=3.6,
+    #     wb=2.3,
+    #     max_speed=[10, -3],
+    #     color="royalblue",
+    #     label="RobotC",
+    # )
+    # robots = [robot_a, robot_b, robot_c]
     return robots
 
 

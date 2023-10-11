@@ -3,6 +3,7 @@ import matplotlib.patches as patches
 from lib.plt_vehicle import Vehicle
 
 
+
 class Animation:
     def __init__(self, dt, fps, save_gif=False):
         # plots
@@ -75,8 +76,8 @@ class Animation:
             shadow=True,
         )
         self._ax.set_aspect("equal")
-        self._ax.set_ylim((30, 100))
-        self._ax.set_xlim((30, 100))
+        self._ax.set_ylim((20, 50))
+        self._ax.set_xlim((20, 50))
 
     def init_quivers(self, robots):
         self._quivers = {}
@@ -142,7 +143,8 @@ class Animation:
             self._quivers[robot.label].set_color("red")
 
     def update_points(self, robot):
-        self._points[robot.label].center = (robot.position[0], robot.position[1])
+        # self._points[robot.label].center = (robot.position[0], robot.position[1])
+        self._points[robot.label].center = (robot.center[0], robot.center[1])
 
     def update_robots(self, robot, steer=0.0):
         self._robots[robot.label].plot(

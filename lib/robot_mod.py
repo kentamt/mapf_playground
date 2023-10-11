@@ -5,33 +5,33 @@ import matplotlib.colors as mcolors
 import random
 
 
-# class State:
-#     def __init__(self, x, y, yaw):
-#         self.x = x
-#         self.y = y
-#         self.yaw = yaw
-#         self.rear_x = 0
-#         self.rear_y = 0
-#         self.v = 0
+class StateBase:
+    def __init__(self, x, y, yaw):
+        self.x = x
+        self.y = y
+        self.yaw = yaw
 
-class State:
+class State(StateBase):
 
-    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, WB=1.0):
+    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, wb=1.0):
+        super().__init__(x, y, yaw)
         self.x = x
         self.y = y
         self.yaw = yaw
         self.v = v
-        self.rear_x = self.x - ((WB / 2) * math.cos(self.yaw))
-        self.rear_y = self.y - ((WB / 2) * math.sin(self.yaw))
-        self.WB = WB
+        self.rear_x = self.x - ((wb / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((wb / 2) * math.sin(self.yaw))
+        self.wb = wb
+        self.steer = 0.0
 
     def update(self, a, delta, dt):
         self.x += self.v * math.cos(self.yaw) * dt
         self.y += self.v * math.sin(self.yaw) * dt
-        self.yaw += self.v / self.WB * math.tan(delta) * dt
+        self.yaw += self.v / self.wb * math.tan(delta) * dt
         self.v += a * dt
-        self.rear_x = self.x - ((self.WB / 2) * math.cos(self.yaw))
-        self.rear_y = self.y - ((self.WB / 2) * math.sin(self.yaw))
+        self.rear_x = self.x - ((self.wb / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((self.wb / 2) * math.sin(self.yaw))
+        self.steer = delta
 
     def calc_distance(self, point_x, point_y):
         dx = self.rear_x - point_x
@@ -109,6 +109,9 @@ class Robot:
         return np.array([self._goal.x, self._goal.y], dtype=np.float64)
 
     @property
+    def center(self):
+        return np.array([self._state.x, self._state.y], dtype=np.float64)
+    @property
     def position(self):
         return np.array([self._state.x, self._state.y], dtype=np.float64)
 
@@ -122,7 +125,7 @@ class Robot:
 
     @property
     def speed(self):
-        return self._speed
+        return self._state.v
 
     @property
     def max_speed(self):
@@ -130,10 +133,11 @@ class Robot:
 
     @property
     def velocity(self):
-        return self._speed * np.array([np.cos(self._state.yaw),
-                                       np.sin(self._state.yaw)])
-
-        # return self._velocity
+        """
+        velocity is 2d array, [vx, vy]
+        """
+        return self._state.v * np.array([np.cos(self._state.yaw),
+                                         np.sin(self._state.yaw)])
 
     @property
     def arrived(self):
@@ -218,10 +222,40 @@ class Car(Robot):
         self.max_speed_f = max_speed[0]  # [m/s]
         self.max_speed_b = max_speed[1]  # [m/s]
 
-        self.steer = 0
-        self._start.yaw = start[2]
-        self._goal.yaw = end[2]
-        self._state.yaw = start[2]
+        # state
+        self._state = State(x=start[0],
+                            y=start[1],
+                            yaw=start[2],
+                            v=0.0,
+                            wb=wb
+                            )
+
+        # start and goal
+        self._start = State(x=start[0],
+                            y=start[1],
+                            yaw=start[2],
+                            v=0.0,
+                            wb=wb)
+        self._goal = State(x=end[0],
+                           y=end[1],
+                           yaw=end[2],
+                           v=0.0,
+                           wb=wb)
+
+    @property
+    def steer(self):
+        return self._state.steer
+    @property
+    def start(self):
+        return np.array([self._start.rear_x, self._start.rear_y], dtype=np.float64)
+
+    @property
+    def goal(self):
+        return np.array([self._goal.rear_x, self._goal.rear_y], dtype=np.float64)
+
+    @property
+    def position(self):
+        return np.array([self._state.rear_x, self._state.rear_y], dtype=np.float64)
 
     def move(self, u=None, dt=1):
         """
@@ -236,28 +270,17 @@ class Car(Robot):
 
         # Check if we're close to the end point
         r_d = np.linalg.norm(self.goal - self.position)
-        if r_d <= self._speed * dt:
+        if r_d <= self._state.v * dt:
             self._state = self._goal
-            self._speed = 0
+            self._state.v = 0
             self._arrived = True
 
         else:
-            # Move the robot according to the input
-            vx, vy = self._speed * np.array([np.cos(self._state.yaw),
-                                             np.sin(self._state.yaw)])
-            self._state.x += vx * dt
-            self._state.y += vy * dt
-            self._state.yaw += self._speed / self.wb * np.tan(u[1]) * dt
-
-            # Update V
-            self._speed += u[0] * dt
+            self._state.update(u[0], u[1], dt)
             self._limit_speed()
 
-            # just for vis
-            self.steer = u[1]
-
     def _limit_speed(self):
-        if self._speed > self.max_speed_f:
-            self._speed = self.max_speed_f
-        if self._speed < self.max_speed_b:
-            self._speed = self.max_speed_b
+        if self._state.v > self.max_speed_f:
+            self._state.v = self.max_speed_f
+        if self._state.v < self.max_speed_b:
+            self._state.v = self.max_speed_b

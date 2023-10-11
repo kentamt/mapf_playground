@@ -31,7 +31,7 @@ class Screen:
         self.win = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.clock = pygame.time.Clock()
         self.color = color_dict
-        self.scale = 6
+        self.scale = 10
         pygame.display.set_caption("Animation")
 
     def quit(self):
