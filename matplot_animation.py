@@ -3,7 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 
-from lib.robot import Car
+from lib.robot_mod import Car
 from lib.plt_animation import Animation
 
 matplotlib.use("TkAgg")
@@ -61,27 +61,37 @@ def main():
 
 
 def init_robots():
-    robotA = Car(
-        start=(10, 10),
-        end=(30, 30),
+    robot_a = Car(
+        start=(60, 60, np.radians(45)),
+        end=(70, 80, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
         max_speed=[10, -3],
-        color="red",
+        color="salmon",
         label="RobotA",
     )
-    robotB = Car(
-        start=(30, 30),
-        end=(10, 10),
+    robot_b = Car(
+        start=(80, 80, np.radians(0)),
+        end=(70, 70, np.radians(45)),
         speed=10,
         radius=3.6,
         wb=2.3,
         max_speed=[10, -3],
-        color="green",
+        color="teal",
         label="RobotB",
     )
-    robots = [robotA, robotB]  # , robotC, robotD, robotE]
+    robot_c = Car(
+        start=(60, 80, np.radians(90)),
+        end=(80, 60, np.radians(45)),
+        speed=10,
+        radius=3.6,
+        wb=2.3,
+        max_speed=[10, -3],
+        color="royalblue",
+        label="RobotC",
+    )
+    robots = [robot_a, robot_b, robot_c]
     return robots
 
 

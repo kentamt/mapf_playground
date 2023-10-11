@@ -2,8 +2,9 @@ import sys
 import numpy as np
 from lib.robot_mod import Car, Robot
 from lib.vo import VelocityObstacle
-from pygame_animation import Screen
+from lib.path_planner import DubinsPathPlanner
 
+from pygame_animation import Screen
 
 def acceleration(frame):
     velocity = 40  # [m/s]
@@ -17,6 +18,10 @@ def steering_angle(frame):
 def main_car():
     screen = Screen()
     robots = init_cars()
+
+    r = robots[1]
+    path = DubinsPathPlanner()
+    path.generate(r, 1./3.0)
 
     run = True
     frame = 0
@@ -222,6 +227,14 @@ def init_cars():
         label="RobotC",
     )
     robots = [robot_a, robot_b, robot_c]
+
+    # set path from start to goal
+    curvature = 1.0/3.0
+    for r in robots:
+        path = DubinsPathPlanner()
+        path.generate(r, curvature)
+        r.set_path(path.x, path.y, path.yaw)
+
     return robots
 
 

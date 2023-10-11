@@ -27,19 +27,12 @@ def get_color(name: str) -> tuple:
 class Screen:
     def __init__(self):
         pygame.init()
-
-        # Set up display
         self.WIDTH, self.HEIGHT = 640, 480
         self.win = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
-        pygame.display.set_caption("Animation")
-
-        # Clock to control frame rate
         self.clock = pygame.time.Clock()
-
-        # Colors
         self.color = color_dict
-
-        self.scale = 5
+        self.scale = 6
+        pygame.display.set_caption("Animation")
 
     def quit(self):
         pygame.quit()
@@ -97,6 +90,20 @@ class Screen:
                 y2 = self.meter_to_pixel(traj[i + 1][1])
                 pygame.draw.line(
                     self.win, self.color["lightgreen"], (x1, y1), (x2, y2), 1
+                )
+
+        for r in robots:
+            for i, (p_x1, p_y1) in enumerate(zip(r.path_x, r.path_y)):
+                if i == len(r.path_x) - 1:
+                    break
+
+                p_x1 = self.meter_to_pixel(p_x1)
+                p_y1 = self.meter_to_pixel(p_y1)
+                p_x2 = self.meter_to_pixel(r.path_x[i+1])
+                p_y2 = self.meter_to_pixel(r.path_y[i+1])
+
+                pygame.draw.line(
+                    self.win, self.color["white"], (p_x1, p_y1), (p_x2, p_y2), 1
                 )
 
         pygame.display.flip()

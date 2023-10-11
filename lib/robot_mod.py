@@ -9,6 +9,9 @@ class State:
         self.x = x
         self.y = y
         self.yaw = yaw
+        self.rear_x
+        self.rear_y
+        self.v
 
 
 class Robot:
@@ -24,9 +27,14 @@ class Robot:
             label=None,
     ):
 
+        # spec
         self._radius = radius
         self._max_speed = max_speed
-        self._arrived = True
+
+        # path
+        self._path_x = None
+        self._path_y = None
+        self._path_yaw = None
 
         # position
         self._start = State(start[0], start[1], 0)
@@ -41,11 +49,16 @@ class Robot:
         yaw = np.arctan2(default_v[1], default_v[0])
         self._state = State(start[0], start[1], yaw)
 
+        #
+        self._arrived = True
+
         # check
         d = np.linalg.norm(self.start - self.goal)
         assert speed < d, "speed is too large."
 
         # viz
+        self.trajectory = []
+
         if color is None:
             self.color = random.choice(list(mcolors.cnames.keys()))
         else:
@@ -56,35 +69,11 @@ class Robot:
         else:
             self.label = label
 
-
     def __str__(self):
         return self.label
 
     def __repr__(self):
         return self.label
-
-    def move(self, velocity, dt=1):
-        """
-        move a robot
-        velocity is 2d array, [vx, vy]
-        """
-
-        if not self.arrived:  # If the robot isn't moving, do nothing
-            return
-
-        self._state.yaw = np.arctan2(velocity[1], velocity[0])
-        self._speed = np.linalg.norm(velocity)
-
-        # Arrived
-        r_dist = np.linalg.norm(self.goal - self.position)
-        if r_dist <= self._speed * dt:
-            self._state = self._goal
-            self._arrived = True
-            self._speed = 0.0
-        # Not arrived
-        else:
-            self._state.x += velocity[0] * dt
-            self._state.y += velocity[1] * dt
 
     @property
     def start(self):
@@ -124,6 +113,46 @@ class Robot:
     @property
     def arrived(self):
         return self._arrived
+
+    @property
+    def path_x(self):
+        return self._path_x
+
+    @property
+    def path_y(self):
+        return self._path_y
+
+    @property
+    def path_yaw(self):
+        return self._path_yaw
+
+    def set_path(self, path_x, path_y, path_yaw):
+        self._path_x = path_x
+        self._path_y = path_y
+        self._path_yaw = path_yaw
+
+    def move(self, velocity, dt=1):
+        """
+        move a robot
+        velocity is 2d array, [vx, vy]
+        """
+
+        if not self.arrived:  # If the robot isn't moving, do nothing
+            return
+
+        self._state.yaw = np.arctan2(velocity[1], velocity[0])
+        self._speed = np.linalg.norm(velocity)
+
+        # Arrived
+        r_dist = np.linalg.norm(self.goal - self.position)
+        if r_dist <= self._speed * dt:
+            self._state = self._goal
+            self._arrived = True
+            self._speed = 0.0
+        # Not arrived
+        else:
+            self._state.x += velocity[0] * dt
+            self._state.y += velocity[1] * dt
 
 
 class Car(Robot):

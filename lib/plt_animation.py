@@ -47,8 +47,8 @@ class Animation:
             robot.plot(
                 r.position[0],
                 r.position[1],
-                r._yaw,
-                steer=r._yaw,
+                r.yaw,
+                steer=r.yaw,
                 cabcolor="-r",
                 truckcolor="-k",
             )
@@ -75,8 +75,8 @@ class Animation:
             shadow=True,
         )
         self._ax.set_aspect("equal")
-        self._ax.set_ylim((0, 40))
-        self._ax.set_xlim((20, 60))
+        self._ax.set_ylim((30, 100))
+        self._ax.set_xlim((30, 100))
 
     def init_quivers(self, robots):
         self._quivers = {}
@@ -148,7 +148,7 @@ class Animation:
         self._robots[robot.label].plot(
             robot.position[0],
             robot.position[1],
-            robot._yaw,
+            robot.yaw,
             steer=steer,
             cabcolor="-r",
             truckcolor="-k",
