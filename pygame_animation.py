@@ -25,13 +25,13 @@ def get_color(name: str) -> tuple:
 
 
 class Screen:
-    def __init__(self):
+    def __init__(self, scale=5):
         pygame.init()
         self.WIDTH, self.HEIGHT = 640, 480
         self.win = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.clock = pygame.time.Clock()
         self.color = color_dict
-        self.scale = 5
+        self.scale = scale
         pygame.display.set_caption("Animation")
 
     def quit(self):
@@ -45,7 +45,7 @@ class Screen:
         return run
 
     def update_robots(self, robots, trajectories=None):
-        self.win.fill(self.color["darkblue"])
+        self.win.fill(self.color["gray"])
 
         for r in robots:
             rr = self.meter_to_pixel(r.radius)
