@@ -1,17 +1,42 @@
 import uuid
+import math
 import numpy as np
 import matplotlib.colors as mcolors
 import random
 
 
+# class State:
+#     def __init__(self, x, y, yaw):
+#         self.x = x
+#         self.y = y
+#         self.yaw = yaw
+#         self.rear_x = 0
+#         self.rear_y = 0
+#         self.v = 0
+
 class State:
-    def __init__(self, x, y, yaw):
+
+    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, WB=1.0):
         self.x = x
         self.y = y
         self.yaw = yaw
-        self.rear_x
-        self.rear_y
-        self.v
+        self.v = v
+        self.rear_x = self.x - ((WB / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((WB / 2) * math.sin(self.yaw))
+        self.WB = WB
+
+    def update(self, a, delta, dt):
+        self.x += self.v * math.cos(self.yaw) * dt
+        self.y += self.v * math.sin(self.yaw) * dt
+        self.yaw += self.v / self.WB * math.tan(delta) * dt
+        self.v += a * dt
+        self.rear_x = self.x - ((self.WB / 2) * math.cos(self.yaw))
+        self.rear_y = self.y - ((self.WB / 2) * math.sin(self.yaw))
+
+    def calc_distance(self, point_x, point_y):
+        dx = self.rear_x - point_x
+        dy = self.rear_y - point_y
+        return math.hypot(dx, dy)
 
 
 class Robot:
@@ -36,7 +61,7 @@ class Robot:
         self._path_y = None
         self._path_yaw = None
 
-        # position
+        # start and goal
         self._start = State(start[0], start[1], 0)
         self._goal = State(goal[0], goal[1], 0)
 
