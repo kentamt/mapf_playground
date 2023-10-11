@@ -38,8 +38,8 @@ def main():
     def update(frame):
         """"move robots and update plots"""
         for robot_a in robots:
-            # u = [acceleration(frame), steering_angle(frame)]
-            u = [0, steering_angle(frame)]
+            u = [acceleration(frame), steering_angle(frame)]
+            # u = [0, steering_angle(frame)]
             robot_a.move(u, dt=dt)
 
             update_animation_obj(ani_obj, robot_a, u)

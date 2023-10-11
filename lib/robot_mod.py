@@ -11,6 +11,7 @@ class StateBase:
         self.y = y
         self.yaw = yaw
 
+
 class State(StateBase):
 
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, wb=1.0):
@@ -208,7 +209,6 @@ class Car(Robot):
         )
 
         # robot parameters
-        # for vis
         self.length = 4.5  # [m]
         self.width = 2.5  # [m]
         self.backtowheel = 0.6  # [m]
@@ -236,6 +236,7 @@ class Car(Robot):
                             yaw=start[2],
                             v=0.0,
                             wb=wb)
+
         self._goal = State(x=end[0],
                            y=end[1],
                            yaw=end[2],
@@ -245,24 +246,42 @@ class Car(Robot):
     @property
     def steer(self):
         return self._state.steer
+
+    @property
+    def state(self):
+        return self._state
+
+    @property
+    def start_state(self):
+        return self._start
+
+    @property
+    def goal_state(self):
+        return self._goal
+
     @property
     def start(self):
+        """ returns rear position"""
         return np.array([self._start.rear_x, self._start.rear_y], dtype=np.float64)
 
     @property
     def goal(self):
+        """ returns rear position"""
         return np.array([self._goal.rear_x, self._goal.rear_y], dtype=np.float64)
 
     @property
     def start_center(self):
+        """ returns center position"""
         return np.array([self._start.x, self._start.y], dtype=np.float64)
 
     @property
     def goal_center(self):
+        """ returns center position"""
         return np.array([self._goal.x, self._goal.y], dtype=np.float64)
 
     @property
     def position(self):
+        """ returns rear position"""
         return np.array([self._state.rear_x, self._state.rear_y], dtype=np.float64)
 
     def move(self, u=None, dt=1):
@@ -278,8 +297,8 @@ class Car(Robot):
 
         # Check if we're close to the end point
         r_d = np.linalg.norm(self.goal - self.position)
-        if r_d <= self._state.v * dt:
-            self._state = self._goal
+        if r_d <= 1.0:  # self._state.v * dt:
+            # self._state = self._goal
             self._state.v = 0
             self._arrived = True
 
