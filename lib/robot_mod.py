@@ -16,9 +16,6 @@ class State(StateBase):
 
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, wb=1.0):
         super().__init__(x, y, yaw)
-        self.x = x
-        self.y = y
-        self.yaw = yaw
         self.v = v
         self.rear_x = self.x - ((wb / 2) * math.cos(self.yaw))
         self.rear_y = self.y - ((wb / 2) * math.sin(self.yaw))
@@ -48,7 +45,6 @@ class Robot:
             speed,
             radius,
             max_speed,
-            default_v=None,
             color=None,
             label=None,
     ):
@@ -61,30 +57,15 @@ class Robot:
         self._path_x = None
         self._path_y = None
         self._path_yaw = None
-
-        # start and goal
         self._start = State(start[0], start[1], 0)
         self._goal = State(goal[0], goal[1], 0)
-
-        # kinematics
-        if default_v is None:
-            vec = self.goal - self.start
-            default_v = (vec / np.linalg.norm(vec)) * speed
-
-        self._speed = np.linalg.norm(default_v)
-        yaw = np.arctan2(default_v[1], default_v[0])
+        vec = self.goal - self.start
+        yaw = np.arctan2(vec[1], vec[0])
         self._state = State(start[0], start[1], yaw)
+        self._arrived = False
 
-        #
-        self._arrived = True
-
-        # check
-        d = np.linalg.norm(self.start - self.goal)
-        assert speed < d, "speed is too large."
-
-        # viz
+        # visualisation
         self.trajectory = []
-
         if color is None:
             self.color = random.choice(list(mcolors.cnames.keys()))
         else:
@@ -94,6 +75,11 @@ class Robot:
             self.label = uuid.uuid1()
         else:
             self.label = label
+
+        # check
+        d = np.linalg.norm(self.start - self.goal)
+        assert speed < d, "speed is too large compared to the distance between the start and the goal."
+
 
     def __str__(self):
         return self.label
@@ -144,6 +130,10 @@ class Robot:
     def arrived(self):
         return self._arrived
 
+    @arrived.setter
+    def arrived(self, value):
+        self._arrived = value
+
     @property
     def path_x(self):
         return self._path_x
@@ -167,18 +157,18 @@ class Robot:
         velocity is 2d array, [vx, vy]
         """
 
-        if not self.arrived:  # If the robot isn't moving, do nothing
+        if self.arrived:  # If the robot isn't moving, do nothing
             return
 
         self._state.yaw = np.arctan2(velocity[1], velocity[0])
-        self._speed = np.linalg.norm(velocity)
+        self._state.v = np.linalg.norm(velocity)
 
         # Arrived
         r_dist = np.linalg.norm(self.goal - self.position)
-        if r_dist <= self._speed * dt:
+        if r_dist <= self._state.v * dt:
             self._state = self._goal
             self._arrived = True
-            self._speed = 0.0
+            self._state.v = 0.0
         # Not arrived
         else:
             self._state.x += velocity[0] * dt
@@ -200,12 +190,11 @@ class Car(Robot):
             radius,
             wb,
             max_speed,
-            default_v=None,
             color=None,
             label=None,
     ):
         super().__init__(
-            start[:2], end[:2], speed, radius, max_speed[0], default_v, color, label
+            start[:2], end[:2], speed, radius, max_speed[0], color, label
         )
 
         # robot parameters
@@ -221,6 +210,7 @@ class Car(Robot):
         self.max_steer = np.deg2rad(45.0)  # maximum steering angle [rad]
         self.max_speed_f = max_speed[0]  # [m/s]
         self.max_speed_b = max_speed[1]  # [m/s]
+        self.arrival_th = 1.0  # [m]
 
         # state
         self._state = State(x=start[0],
@@ -291,20 +281,20 @@ class Car(Robot):
          u[1] : yaw rate
         """
 
-        # Check the current state
-        if not self.arrived:  # If the robot isn't moving, do nothing
+        if self.arrived:
             return
 
-        # Check if we're close to the end point
-        r_d = np.linalg.norm(self.goal - self.position)
-        if r_d <= 1.0:  # self._state.v * dt:
-            # self._state = self._goal
+        if self.is_arrived():
             self._state.v = 0
             self._arrived = True
-
         else:
             self._state.update(u[0], u[1], dt)
             self._limit_speed()
+            self.trajectory.append((self._state.x, self._state.y))
+
+    def is_arrived(self):
+        r_d = np.linalg.norm(self.goal - self.position)
+        return r_d <= self.arrival_th
 
     def _limit_speed(self):
         if self._state.v > self.max_speed_f:

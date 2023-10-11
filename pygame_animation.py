@@ -72,41 +72,43 @@ class Screen:
 
         pygame.display.flip()
 
-    def update_cars(self, robots, trajectories=None):
+    def update_cars(self, robots):
         self.win.fill(self.color["black"])
 
         for r in robots:
             self.draw_car(r)
             self.draw_start(r)
             self.draw_goal(r)
-
-        for traj in trajectories.values():
-            for i, (x1, y1) in enumerate(traj):
-                if i == len(traj) - 1:
-                    break
-                x1 = self.meter_to_pixel(x1)
-                y1 = self.meter_to_pixel(y1)
-                x2 = self.meter_to_pixel(traj[i + 1][0])
-                y2 = self.meter_to_pixel(traj[i + 1][1])
-                pygame.draw.line(
-                    self.win, self.color["lightgreen"], (x1, y1), (x2, y2), 1
-                )
-
-        for r in robots:
-            for i, (p_x1, p_y1) in enumerate(zip(r.path_x, r.path_y)):
-                if i == len(r.path_x) - 1:
-                    break
-
-                p_x1 = self.meter_to_pixel(p_x1)
-                p_y1 = self.meter_to_pixel(p_y1)
-                p_x2 = self.meter_to_pixel(r.path_x[i+1])
-                p_y2 = self.meter_to_pixel(r.path_y[i+1])
-
-                pygame.draw.line(
-                    self.win, self.color["white"], (p_x1, p_y1), (p_x2, p_y2), 1
-                )
+            self.draw_path(r)
+            self.draw_trajectory(r)
 
         pygame.display.flip()
+
+    def draw_trajectory(self, r):
+        for i, (x1, y1) in enumerate(r.trajectory):
+            if i == len(r.trajectory) - 1:
+                break
+            x1 = self.meter_to_pixel(x1)
+            y1 = self.meter_to_pixel(y1)
+            x2 = self.meter_to_pixel(r.trajectory[i + 1][0])
+            y2 = self.meter_to_pixel(r.trajectory[i + 1][1])
+            pygame.draw.line(
+                self.win, self.color["lightgreen"], (x1, y1), (x2, y2), 1
+            )
+
+    def draw_path(self, r):
+        for i, (p_x1, p_y1) in enumerate(zip(r.path_x, r.path_y)):
+            if i == len(r.path_x) - 1:
+                break
+
+            p_x1 = self.meter_to_pixel(p_x1)
+            p_y1 = self.meter_to_pixel(p_y1)
+            p_x2 = self.meter_to_pixel(r.path_x[i + 1])
+            p_y2 = self.meter_to_pixel(r.path_y[i + 1])
+
+            pygame.draw.line(
+                self.win, self.color["white"], (p_x1, p_y1), (p_x2, p_y2), 1
+            )
 
     def meter_to_pixel(self, x):
         return x * self.scale

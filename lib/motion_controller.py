@@ -80,7 +80,7 @@ class TargetCourse:
 
         # To speed up nearest point search, doing it at only first time.
         if self.old_nearest_point_index is None:
-            # search nearest point index
+            # search the nearest point index
             dx = [state.rear_x - icx for icx in self.cx]
             dy = [state.rear_y - icy for icy in self.cy]
             d = np.hypot(dx, dy)
@@ -100,7 +100,7 @@ class TargetCourse:
                     ind = ind + 1 if (ind + 1) < len(self.cx) else ind
                     distance_this_index = distance_next_index
                 else:
-                    break
+                    return None, None
 
             self.old_nearest_point_index = ind
 
@@ -117,6 +117,9 @@ class TargetCourse:
 
 def pure_pursuit_steer_control(state, trajectory, pind):
     ind, Lf = trajectory.search_target_index(state)
+
+    if ind is None:
+        return 0, len(trajectory.cx) - 1
 
     if pind >= ind:
         ind = pind
