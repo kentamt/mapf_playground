@@ -254,6 +254,14 @@ class Car(Robot):
         return np.array([self._goal.rear_x, self._goal.rear_y], dtype=np.float64)
 
     @property
+    def start_center(self):
+        return np.array([self._start.x, self._start.y], dtype=np.float64)
+
+    @property
+    def goal_center(self):
+        return np.array([self._goal.x, self._goal.y], dtype=np.float64)
+
+    @property
     def position(self):
         return np.array([self._state.rear_x, self._state.rear_y], dtype=np.float64)
 

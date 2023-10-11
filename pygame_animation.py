@@ -128,8 +128,10 @@ class Screen:
         WB = self.meter_to_pixel(r.wb)
 
         # body
-        x = self.meter_to_pixel(r.position[0])
-        y = self.meter_to_pixel(r.position[1])
+        x = self.meter_to_pixel(r.center[0])
+        y = self.meter_to_pixel(r.center[1])
+        rear_x = self.meter_to_pixel(r.position[0])
+        rear_y = self.meter_to_pixel(r.position[1])
         yaw = -np.degrees(r.yaw)
         car_rect = pygame.Rect(0, 0, CAR_LENGTH, CAR_WIDTH)
         car_image = pygame.Surface((CAR_LENGTH, CAR_WIDTH), pygame.SRCALPHA)
@@ -184,8 +186,9 @@ class Screen:
         CAR_WIDTH = self.meter_to_pixel(r.width)
 
         # body
-        x = self.meter_to_pixel(r.start[0])
-        y = self.meter_to_pixel(r.start[1])
+        x = self.meter_to_pixel(r.start_center[0])
+        y = self.meter_to_pixel(r.start_center[1])
+
         yaw = -np.degrees(r._start.yaw)
         car_rect = pygame.Rect(0, 0, CAR_LENGTH, CAR_WIDTH)
         car_image = pygame.Surface((CAR_LENGTH, CAR_WIDTH), pygame.SRCALPHA)
@@ -202,8 +205,10 @@ class Screen:
         CAR_WIDTH = self.meter_to_pixel(r.width)
 
         # body
-        x = self.meter_to_pixel(r.goal[0])
-        y = self.meter_to_pixel(r.goal[1])
+        x = self.meter_to_pixel(r.goal_center[0])
+        y = self.meter_to_pixel(r.goal_center[1])
+
+
         yaw = -np.degrees(r._goal.yaw)
         car_rect = pygame.Rect(0, 0, CAR_LENGTH, CAR_WIDTH)
         car_image = pygame.Surface((CAR_LENGTH, CAR_WIDTH), pygame.SRCALPHA)
