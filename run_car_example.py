@@ -103,7 +103,7 @@ def main_car_gui(dt=0.1):
     target_course_dict = init_target_course(robots)
 
     screen = Screen()
-    while screen.is_quit_event() and not is_all_cars_arrived(robots):
+    while screen.is_quit_event(): #  and not is_all_cars_arrived(robots):
 
         for r in robots:
             u = motion_control(r, target_course_dict)
