@@ -102,15 +102,19 @@ def main_car_gui(dt=0.1):
     robots = init_cars()
     target_course_dict = init_target_course(robots)
 
+    timestamp = 0
     screen = Screen()
     while screen.is_quit_event(): #  and not is_all_cars_arrived(robots):
 
         for r in robots:
             u = motion_control(r, target_course_dict)
+            print(u)
             r.move(u, dt=dt)
 
         screen.update_cars(robots)
         screen.clock.tick(60)  # 60 frames per second
+        print(timestamp)
+        timestamp += 1
 
     screen.quit()
 

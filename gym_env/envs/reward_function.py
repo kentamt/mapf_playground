@@ -24,5 +24,11 @@ class SimpleReward:
 
         reward = d - n_d
 
+        reward = -1
+
+        if n_d < 2.0:
+            reward += 100
+
+
         return reward
 

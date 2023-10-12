@@ -25,7 +25,7 @@ class CarEnv(gym.Env):
 
         # Define action space: [acceleration, steering angle]
         self.action_space = spaces.Box(low=np.array([-1.0, -np.pi / 4]),
-                                       high=np.array([1.0, np.pi / 4]),
+                                       high=np.array([5.0, np.pi / 4]),
                                        dtype=np.float64)
 
         # Define observation space: [x_i, y_i, yaw_i, v_i] for each vehicle
@@ -37,11 +37,16 @@ class CarEnv(gym.Env):
         self.observation_function = SimpleObservation()
         self.reward_function = SimpleReward()
 
+        self.max_timesteps = 200
+        self.timestep = 0
+
         # for rendering
         self.screen = Screen()
 
     def step(self, action):
         """ Execute one time step within the environment. """
+
+        self.timestep += 1
 
         obs = self.observation_function.compute(self.robots)
 
@@ -60,7 +65,7 @@ class CarEnv(gym.Env):
 
     def reset(self, seed=None, options=None):
         """ Reset the state of the environment to an initial state. """
-        print('reset is called')
+        self.timestep = 0
 
         self.robots = self.__init_cars()
         initial_observation = self.observation_function.compute(self.robots)
@@ -69,7 +74,6 @@ class CarEnv(gym.Env):
 
     def render(self, mode='human'):
         """ Render the environment to the screen. """
-
         if mode == 'human':
             self.screen.is_quit_event()
             self.screen.update_cars(self.robots)
@@ -92,6 +96,7 @@ class CarEnv(gym.Env):
     def terminate(self):
         is_done = False
         is_done += self.__is_all_cars_arrived(self.robots)
+        is_done += self.timestep >= self.max_timesteps
 
         return bool(is_done)
 
@@ -114,7 +119,7 @@ class CarEnv(gym.Env):
         """
         robot_a = Car(
             start=(25, 25, np.radians(45)),
-            end=(90, 90, np.radians(0)),
+            end=(40, 40, np.radians(45)),
             speed=10,
             radius=3.6,
             wb=2.3,
