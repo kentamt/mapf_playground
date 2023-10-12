@@ -2,42 +2,102 @@ import numpy as np
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
+from gym.envs.registration import register
 
 class CarEnv(gym.Env):
-    metadata = {'render.modes': ['human']}
+    def __init__(self, N=10):
+        super(CarEnv, self).__init__()
+        metadata = {'render.modes': ['human', 'rbg_array']}
 
-    def __init__(self):
-        low = [0,0]
-        high = [1.0, 1.0]
-        self.action_space = spaces.Box(low=low, high=high)
-        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
+        self.N = N  # Number of vehicles
+
+        # Define action space: [acceleration, steering angle]
+        self.action_space = spaces.Box(low=np.array([-1.0, -np.pi / 4]),
+                                       high=np.array([1.0, np.pi / 4]),
+                                       dtype=np.float64)
+
+        # Define observation space: [x_i, y_i, yaw_i, v_i] for each vehicle
+        low_obs = np.array([-np.inf] * 4 * self.N)
+        high_obs = np.array([np.inf] * 4 * self.N)
+        self.observation_space = spaces.Box(low=low_obs, high=high_obs, dtype=np.float64)
 
     def step(self, action):
+        """
+        Execute one time step within the environment.
+        """
+        # Apply action
+        # Your logic here
 
-        observation = self.observe()
-        reward = self.reward()
-        done = self.is_done()
+        # Compute reward
+        # Your logic here
+        reward = 0
+
+        # Check if done
+        # Your logic here
+        done = False
+
+        # Update state
+        # Your logic here
+        observation = np.zeros(self.N * 4)  # Update with your logic
+
         info = {}
-        return observation, reward, done, info
 
-    def reset(self):
-        # self.observation = self.observation
-        self.done = False
+        truncation = False
 
-    def observe(self):
-        pass
+        return observation, reward, done, truncation, info
 
-    def reward(self):
-        pass
+    def reset(self, seed=None, options=None):
+        """
+        Reset the state of the environment to an initial state.
+        """
+        print('reset is called')
 
-    def is_done(self):
-        pass
+        # Your reset logic here
+        initial_observation = np.zeros(self.N * 4)  # Update with your logic
 
-    def render(self, mode='human', close=False):
+        return initial_observation, {}
+
+    def render(self, mode='human'):
+        """
+        Render the environment to the screen.
+        """
+        if mode == 'human':
+            pass
+            # print(f'rendering for human')
+
+
+        elif mode == 'rgb_array':
+            pass
+            # print(f'rendering for rgb_array')
+
+        else:
+            raise NotImplementedError(f"Render mode {mode} is not supported. "
+                                      f"Supported modes are: {'human', 'rgb_array'}")
+
+
         pass
 
     def close(self):
+        """
+        Perform any necessary cleanup.
+        """
         pass
 
-    def seed(self, seed=None):
-        pass
+    # Example usage
+
+
+#
+#
+# def main():
+#     env = CarEnv(N=5)  # Create environment with 10 vehicles
+#     obs = env.reset()  # Reset environment and get initial observation
+#     action = env.action_space.sample()  # Get a random action
+#     print(action)
+#     new_obs, reward, done, info = env.step(action)  # Step the environment with the random action
+#     print(f'{new_obs=}')
+#     print(f'{reward=}')
+#     print(f'{done=}')
+#
+#
+# if __name__ == "__main__":
+#     main()
