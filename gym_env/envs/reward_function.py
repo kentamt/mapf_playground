@@ -11,10 +11,10 @@ class SimpleReward:
         # obs = [x, y, yaw, v, gx, gy, gyaw]
 
         # position of the robot
-        x, y, _, _, gx, gy, _ = obs
+        x, y, _, _, gx, gy, gyaw = obs
 
         # next position of the robot
-        n_x, n_y, _, _, _, _, _ = n_obs
+        n_x, n_y, yaw, _, _, _, _ = n_obs
 
         # distance between obs and goal
         d = np.sqrt((gx - x)**2 + (gy - y)**2)
@@ -24,9 +24,9 @@ class SimpleReward:
 
         reward = d - n_d
 
-        reward = -1
+        reward += -1
 
-        if n_d < 2.0:
+        if n_d < 2.0 and np.abs(yaw - gyaw) < np.radians(10):
             reward += 100
 
 
