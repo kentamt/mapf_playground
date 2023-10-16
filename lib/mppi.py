@@ -41,6 +41,11 @@ class MPPIControllerBase:
         )
         self.tmp_car_model = deepcopy(self.car_model)
 
+        self.Q = None
+        self.w = None
+        self.U = None
+
+
     def init_car_model(self):
         self.car_model = deepcopy(self.tmp_car_model)
 
@@ -53,7 +58,7 @@ class MPPIControllerBase:
         nominal = np.zeros((2, self.time_horizon))
         return nominal
 
-    def compute_input(self, dt=0.1, timestamp=0) -> np.ndarray:
+    def compute_input(self, dt=0.1, timestamp=0, prefix='') -> np.ndarray:
         """
         S: score array
         W: weight array
@@ -105,11 +110,15 @@ class MPPIControllerBase:
         u_out[0] = w.dot(U[:, 0, :])
         u_out[1] = w.dot(U[:, 1, :])
 
-        self.plot(Q, timestamp, u_out, w, dt)
+        self.Q = deepcopy(Q)
+        self.w = deepcopy(w)
+        self.U = deepcopy(U)
+
+        self.plot(Q, timestamp, prefix, u_out, w, dt)
 
         return u_out
 
-    def plot(self, Q, timestamp, u_out, w, dt):
+    def plot(self, Q, timestamp, prefix, u_out, w, dt):
 
         from matplotlib import pyplot as plt
         import matplotlib.cm as cm
@@ -143,16 +152,15 @@ class MPPIControllerBase:
         ax.legend()
         ax.axis('equal')
         ax.set_xlim(0, 80)
-        ax.set_ylim(-20, 40)
+        ax.set_ylim(0, 80)
         sm = cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
         plt.colorbar(sm, label='w')
         # plt.show()
-        plt.savefig(f'mppi_{timestamp:03d}.png')
+        plt.savefig(f'{prefix}_mppi_{timestamp:03d}.png')
 
     def compute_cost(self, Q, k):
         return 1.0
-
 
 class SampleMPPIController(MPPIControllerBase):
     def __init__(self, *args, **kwargs):
@@ -177,6 +185,12 @@ class SampleMPPIController(MPPIControllerBase):
         c_time = float(closest_idx / self.time_horizon)
         cost = c_distance + 10 * c_angle + c_time
         return cost
+
+
+class MultiAgentMPPIController(SampleMPPIController):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
 
 
 def main():
