@@ -280,8 +280,6 @@ class Car(Robot):
          u[0] : acceleration
          u[1] : yaw rate
         """
-
-
         if self.arrived:
             return
 
