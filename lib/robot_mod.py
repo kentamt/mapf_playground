@@ -77,8 +77,8 @@ class Robot:
             self.label = label
 
         # check
-        d = np.linalg.norm(self.start - self.goal)
-        assert speed < d, "speed is too large compared to the distance between the start and the goal."
+        # d = np.linalg.norm(self.start - self.goal)
+        # assert speed < d, "speed is too large compared to the distance between the start and the goal."
 
 
     def __str__(self):
@@ -216,7 +216,7 @@ class Car(Robot):
         self._state = State(x=start[0],
                             y=start[1],
                             yaw=start[2],
-                            v=0.0,
+                            v=speed,
                             wb=wb
                             )
 
@@ -274,17 +274,18 @@ class Car(Robot):
         """ returns rear position"""
         return np.array([self._state.rear_x, self._state.rear_y], dtype=np.float64)
 
-    def move(self, u=None, dt=1):
+    def move(self, u=None, dt=1, ignore_goal=False):
         """
          move a robot and update its state
          u[0] : acceleration
          u[1] : yaw rate
         """
 
+
         if self.arrived:
             return
 
-        if self.is_arrived():
+        if self.is_arrived() and not ignore_goal:
             self._state.v = 0
             self._arrived = True
         else:
